@@ -1,0 +1,248 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Sidebar from '../../components/shared/Sidebar.jsx'
+import Topbar from '../../components/shared/Topbar.jsx'
+import {
+  Database, Plus, Edit2, Trash2, X, Save,
+  CheckCircle, AlertTriangle, RefreshCw, Eye, EyeOff
+} from 'lucide-react'
+
+const INITIAL_PROVIDERS = [
+  { id: 1, name: 'Phone Intelligence API', endpoint: 'https://api.phoneintel.in/v2', key: 'pk_live_xxxxxxxxxxxx', status: 'active', tools: ['Phone Lookup', 'WhatsApp Trace'], latency: '240ms', uptime: '99.2%' },
+  { id: 2, name: 'RTO Vehicle Database', endpoint: 'https://api.vahan.in/v1', key: 'vhn_xxxxxxxxxxxx', status: 'active', tools: ['Vehicle Info'], latency: '180ms', uptime: '98.7%' },
+  { id: 3, name: 'UIDAI Aadhaar API', endpoint: 'https://api.uidai.gov.in/v1', key: 'uid_xxxxxxxxxxxx', status: 'inactive', tools: ['Aadhaar Info'], latency: 'N/A', uptime: 'N/A' },
+  { id: 4, name: 'NPCI UPI Gateway', endpoint: 'https://api.npci.org.in/v2', key: 'npci_xxxxxxxxxxxx', status: 'active', tools: ['UPI Lookup'], latency: '320ms', uptime: '97.5%' },
+  { id: 5, name: 'Telecom CDR Provider', endpoint: 'https://api.cdranal.com/v1', key: 'cdr_xxxxxxxxxxxx', status: 'error', tools: ['CDR Analysis', 'IPDR Analysis'], latency: 'Timeout', uptime: '89.1%' },
+  { id: 6, name: 'Face Recognition Engine', endpoint: 'https://api.faceai.in/v3', key: 'fr_xxxxxxxxxxxx', status: 'active', tools: ['Face Recognition'], latency: '890ms', uptime: '95.3%' },
+]
+
+const STATUS_COLORS = {
+  active: { bg: '#d1fae5', color: '#059669', label: 'Active' },
+  inactive: { bg: '#f1f5f9', color: '#64748b', label: 'Inactive' },
+  error: { bg: '#fee2e2', color: '#dc2626', label: 'Error' },
+}
+
+const EMPTY_FORM = { name: '', endpoint: '', key: '', status: 'active', tools: '' }
+
+export default function AdminProviders() {
+  const navigate = useNavigate()
+  const [user, setUser] = useState({})
+  const [providers, setProviders] = useState(INITIAL_PROVIDERS)
+  const [showModal, setShowModal] = useState(false)
+  const [editProvider, setEditProvider] = useState(null)
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [saving, setSaving] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [showKeys, setShowKeys] = useState({})
+  const [testing, setTesting] = useState(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('cr_user')
+    if (!stored) { navigate('/login'); return }
+    const parsed = JSON.parse(stored)
+    if (parsed.role !== 'admin') { navigate('/login'); return }
+    setUser(parsed)
+  }, [navigate])
+
+  const openCreate = () => {
+    setEditProvider(null)
+    setForm(EMPTY_FORM)
+    setShowModal(true)
+  }
+
+  const openEdit = (p) => {
+    setEditProvider(p)
+    setForm({ ...p, tools: p.tools.join(', ') })
+    setShowModal(true)
+  }
+
+  const handleSave = (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setTimeout(() => {
+      const data = { ...form, tools: form.tools.split(',').map(t => t.trim()).filter(Boolean), latency: 'N/A', uptime: 'N/A' }
+      if (editProvider) {
+        setProviders(providers.map(p => p.id === editProvider.id ? { ...p, ...data } : p))
+      } else {
+        setProviders([...providers, { id: Date.now(), ...data }])
+      }
+      setShowModal(false)
+      setSaving(false)
+    }, 700)
+  }
+
+  const handleTest = (id) => {
+    setTesting(id)
+    setTimeout(() => setTesting(null), 1500)
+  }
+
+  const handleDelete = (id) => {
+    setProviders(providers.filter(p => p.id !== id))
+    setDeleteConfirm(null)
+  }
+
+  const toggleKey = (id) => setShowKeys({ ...showKeys, [id]: !showKeys[id] })
+
+  const maskKey = (key) => key.slice(0, 8) + '••••••••••••' + key.slice(-4)
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+      <Sidebar role="admin" />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <Topbar user={user} />
+        <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Providers</h1>
+              <p style={{ color: '#64748b', fontSize: '0.9rem' }}>External API connectors and data sources</p>
+            </div>
+            <button onClick={openCreate} className="btn-primary" style={{ padding: '10px 20px' }}>
+              <Plus size={16} /> Add Provider
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '24px' }}>
+            {[
+              { label: 'Total Providers', value: providers.length, color: '#0ea5e9', bg: '#e0f2fe' },
+              { label: 'Active', value: providers.filter(p => p.status === 'active').length, color: '#10b981', bg: '#d1fae5' },
+              { label: 'Errors', value: providers.filter(p => p.status === 'error').length, color: '#ef4444', bg: '#fee2e2' },
+            ].map((s) => (
+              <div key={s.label} className="cr-card" style={{ padding: '18px' }}>
+                <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>{s.label}</p>
+                <p style={{ fontSize: '2rem', fontWeight: 700, color: s.color }}>{s.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Providers list */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {providers.map((p) => {
+              const sc = STATUS_COLORS[p.status]
+              return (
+                <div key={p.id} className="cr-card" style={{ padding: '18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <div style={{ width: '36px', height: '36px', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Database size={18} color="#64748b" />
+                        </div>
+                        <div>
+                          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>{p.name}</p>
+                          <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'JetBrains Mono, monospace' }}>{p.endpoint}</p>
+                        </div>
+                      </div>
+
+                      {/* API Key */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', borderRadius: '6px', padding: '8px 12px', marginBottom: '10px', maxWidth: '400px' }}>
+                        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', color: '#64748b', flex: 1 }}>
+                          {showKeys[p.id] ? p.key : maskKey(p.key)}
+                        </span>
+                        <button onClick={() => toggleKey(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+                          {showKeys[p.id] ? <EyeOff size={13} /> : <Eye size={13} />}
+                        </button>
+                      </div>
+
+                      {/* Tools + stats */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                        {p.tools.map(t => (
+                          <span key={t} style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: '4px' }}>{t}</span>
+                        ))}
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Latency: {p.latency}</span>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Uptime: {p.uptime}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                      <span style={{ background: sc.bg, color: sc.color, fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '20px' }}>
+                        {sc.label}
+                      </span>
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                        <button
+                          onClick={() => handleTest(p.id)}
+                          style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', color: '#64748b', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <RefreshCw size={12} className={testing === p.id ? 'animate-spin' : ''} />
+                          {testing === p.id ? 'Testing...' : 'Test'}
+                        </button>
+                        <button onClick={() => openEdit(p)} style={{ background: '#e0f2fe', border: '1px solid #bae6fd', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#0284c7', display: 'flex', alignItems: 'center' }}>
+                          <Edit2 size={13} />
+                        </button>
+                        <button onClick={() => setDeleteConfirm(p.id)} style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center' }}>
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </main>
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '480px', padding: '28px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{editProvider ? 'Edit Provider' : 'Add Provider'}</h3>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Provider Name *</label>
+                <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Phone Intelligence API" className="cr-input" />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>API Endpoint *</label>
+                <input type="text" required value={form.endpoint} onChange={e => setForm({ ...form, endpoint: e.target.value })} placeholder="https://api.example.com/v1" className="cr-input" />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>API Key *</label>
+                <input type="text" required value={form.key} onChange={e => setForm({ ...form, key: e.target.value })} placeholder="pk_live_xxxxxxxxxxxx" className="cr-input" />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Status</label>
+                <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="cr-input">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="error">Error</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Supported Tools (comma separated)</label>
+                <input type="text" value={form.tools} onChange={e => setForm({ ...form, tools: e.target.value })} placeholder="Phone Lookup, WhatsApp Trace" className="cr-input" />
+              </div>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary" style={{ padding: '10px 20px' }}>Cancel</button>
+                <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '10px 20px' }}>
+                  <Save size={15} /> {saving ? 'Saving...' : editProvider ? 'Update' : 'Add Provider'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirm */}
+      {deleteConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '360px', padding: '28px', textAlign: 'center' }}>
+            <div style={{ width: '50px', height: '50px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <AlertTriangle size={24} color="#dc2626" />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Delete Provider?</h3>
+            <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '20px' }}>All tools using this provider will stop working.</p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setDeleteConfirm(null)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '10px' }}>Cancel</button>
+              <button onClick={() => handleDelete(deleteConfirm)} className="btn-danger" style={{ flex: 1, justifyContent: 'center', padding: '10px' }}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
