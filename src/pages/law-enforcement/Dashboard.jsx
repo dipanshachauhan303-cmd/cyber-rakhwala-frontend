@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
 import {
-  Search, Zap, Shield, Clock, FileText,
-  AlertTriangle, CheckCircle, Activity, ArrowUpRight,
-  Mail, MessageCircle, Phone, Car, CreditCard
+  Search, Zap, Shield, FileText,
+  AlertTriangle, Activity, ArrowUpRight,
+  Phone, Car, CreditCard
 } from 'lucide-react'
 
 const QUICK_TOOLS = [
@@ -48,6 +48,7 @@ export default function LEDashboard() {
   const [queryType, setQueryType] = useState('auto')
   const [searching, setSearching] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('cr_user')
@@ -67,10 +68,17 @@ export default function LEDashboard() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
-      <Sidebar role="law-enforcement" />
+      <Sidebar
+        role="law-enforcement"
+        mobileOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
-        <Topbar user={{ ...user, credits: 250 }} />
+        <Topbar
+          user={{ ...user, credits: 250 }}
+          onMenuClick={() => setMobileMenuOpen(true)}
+        />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
@@ -97,7 +105,6 @@ export default function LEDashboard() {
                     background: queryType === t ? '#e0f2fe' : '#ffffff',
                     color: queryType === t ? '#0284c7' : '#64748b',
                     fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-                    textTransform: 'capitalize',
                   }}
                 >
                   {t === 'auto' ? '⚡ Auto' : t.toUpperCase()}
@@ -112,15 +119,13 @@ export default function LEDashboard() {
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Enter IP, domain, email, or phone..."
                 className="cr-input"
-                style={{ flex: 1, fontSize: '0.95rem' }}
+                style={{ flex: 1 }}
               />
               <button type="submit" disabled={searching} className="btn-primary" style={{ padding: '10px 20px', whiteSpace: 'nowrap' }}>
-                {searching ? 'Searching...' : 'Investigate'}
+                {searching ? 'Searching...' : <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>Investigate <ArrowUpRight size={16} /></span>}
               </button>
             </form>
-            <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '8px' }}>
-              ⚡ ~5–15 credits per lookup
-            </p>
+            <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '8px' }}>⚡ ~5–15 credits per lookup</p>
           </div>
 
           {/* Stats */}
@@ -136,9 +141,7 @@ export default function LEDashboard() {
                 <div key={stat.label} className="cr-card" style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div>
-                      <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
-                        {stat.label}
-                      </p>
+                      <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>{stat.label}</p>
                       <p className="stat-number">{stat.value}</p>
                     </div>
                     <div style={{ width: '36px', height: '36px', background: stat.bg, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -152,19 +155,15 @@ export default function LEDashboard() {
 
           {/* Quick Access Tools */}
           <div className="cr-card" style={{ padding: isMobile ? '16px' : '20px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
               <div>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>Quick Access Tools</h3>
                 <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Launch frequently used tools</p>
               </div>
-              <button
-                onClick={() => navigate('/law-enforcement/tools')}
-                style={{ fontSize: '0.82rem', color: '#0ea5e9', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
-              >
+              <button onClick={() => navigate('/law-enforcement/tools')} style={{ fontSize: '0.82rem', color: '#0ea5e9', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 View all <ArrowUpRight size={14} />
               </button>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: '10px' }}>
               {QUICK_TOOLS.map((tool) => {
                 const Icon = tool.icon
@@ -172,8 +171,7 @@ export default function LEDashboard() {
                   <button
                     key={tool.label}
                     onClick={() => navigate('/law-enforcement/tools')}
-                    className="cr-card"
-                    style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', border: '1px solid #e2e8f0', background: '#ffffff', textAlign: 'left', width: '100%' }}
+                    style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#ffffff', textAlign: 'left', width: '100%', transition: 'all 0.2s' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ width: '32px', height: '32px', background: tool.color + '20', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -184,8 +182,8 @@ export default function LEDashboard() {
                       </span>
                     </div>
                     <div>
-                      <p style={{ fontSize: isMobile ? '0.78rem' : '0.875rem', fontWeight: 600, color: '#0f172a' }}>{tool.label}</p>
-                      {!isMobile && <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{tool.desc}</p>}
+                      <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>{tool.label}</p>
+                      {!isMobile && <p style={{ fontSize: '0.72rem', color: '#64748b' }}>{tool.desc}</p>}
                     </div>
                   </button>
                 )
@@ -210,11 +208,9 @@ export default function LEDashboard() {
                   const p = PRIORITY_COLORS[c.priority]
                   return (
                     <div key={c.id} style={{ padding: '10px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>{c.title}</p>
-                      </div>
+                      <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a', marginBottom: '4px' }}>{c.title}</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>{c.id}</span>
+                        <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontFamily: 'monospace' }}>{c.id}</span>
                         <span style={{ background: p.bg, color: p.color, fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px', borderRadius: '20px' }}>{c.priority}</span>
                         <span style={{ background: s.bg, color: s.color, fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px', borderRadius: '20px' }}>{s.label}</span>
                       </div>
@@ -232,8 +228,7 @@ export default function LEDashboard() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>Threat Intel Feed</h3>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
-                  <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }} />
-                  Live
+                  <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }} /> Live
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
