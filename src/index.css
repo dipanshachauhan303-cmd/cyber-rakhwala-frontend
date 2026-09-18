@@ -189,3 +189,28 @@ html, body, #root {
 }
 .cr-table tr:hover td { background: #f8fafc; }
 .cr-table tr:last-child td { border-bottom: none; }
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* Sidebar hide on mobile */
+  .mobile-hide { display: none !important; }
+  
+  /* Full width on mobile */
+  .mobile-full { width: 100% !important; }
+
+  /* Stack grid on mobile */
+  .mobile-stack {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+  }
+
+  /* Smaller text on mobile */
+  .stat-number { font-size: 1.5rem !important; }
+
+  /* Table scroll */
+  .cr-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+@media (max-width: 768px) {
+  .desktop-sidebar { display: none !important; }
+  .mobile-sidebar { display: block !important; }
+  .mobile-menu-btn { display: flex !important; }
+}
