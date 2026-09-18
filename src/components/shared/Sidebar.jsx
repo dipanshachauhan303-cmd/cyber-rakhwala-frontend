@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard, Wrench, FolderOpen, Shield,
@@ -43,10 +43,17 @@ const ROLE_BADGE = {
 export default function Sidebar({ role = 'law-enforcement' }) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const navigate = useNavigate()
   const location = useLocation()
   const links = NAV[role] || NAV['law-enforcement']
   const badge = ROLE_BADGE[role] || ROLE_BADGE['law-enforcement']
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const handleLogout = () => {
     clearAuth()
@@ -58,37 +65,46 @@ export default function Sidebar({ role = 'law-enforcement' }) {
     setMobileOpen(false)
   }
 
-  const renderNav = () => (
+  const renderLinks = () => (
     <>
       {/* Logo */}
       <div style={{
         display: 'flex', alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'space-between',
+        justifyContent: collapsed && !isMobile ? 'center' : 'space-between',
         padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)',
         minHeight: '64px',
       }}>
-        {!collapsed && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Shield size={16} color="#ffffff" />
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Shield size={16} color="#ffffff" />
+          </div>
+          {(!collapsed || isMobile) && (
             <div>
               <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.08em' }}>CYBER</p>
               <p style={{ color: '#64748b', fontSize: '0.65rem' }}>RAKHWALA</p>
             </div>
-          </div>
+          )}
+        </div>
+        {!isMobile && (
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}
+          >
+            {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+          </button>
         )}
-        {collapsed && <Shield size={18} color="#ffffff" />}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}
-        >
-          {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
-        </button>
+        {isMobile && (
+          <button
+            onClick={() => setMobileOpen(false)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Role badge */}
-      {!collapsed && (
+      {(!collapsed || isMobile) && (
         <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span style={{
             background: badge.bg, color: badge.color,
@@ -112,8 +128,9 @@ export default function Sidebar({ role = 'law-enforcement' }) {
               onClick={() => handleNavigate(link.path)}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center',
-                gap: '10px', padding: collapsed ? '10px 0' : '10px 16px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
+                gap: '10px',
+                padding: collapsed && !isMobile ? '10px 0' : '10px 16px',
+                justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
                 background: isActive ? 'rgba(14,165,233,0.12)' : 'transparent',
                 borderRight: isActive ? '2px solid #0ea5e9' : '2px solid transparent',
                 border: 'none', cursor: 'pointer', transition: 'all 0.15s ease',
@@ -121,7 +138,7 @@ export default function Sidebar({ role = 'law-enforcement' }) {
               }}
             >
               <Icon size={16} />
-              {!collapsed && (
+              {(!collapsed || isMobile) && (
                 <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}>
                   {link.label}
                 </span>
@@ -137,88 +154,75 @@ export default function Sidebar({ role = 'law-enforcement' }) {
           onClick={handleLogout}
           style={{
             width: '100%', display: 'flex', alignItems: 'center',
-            gap: '10px', padding: '10px 12px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
+            gap: '10px',
+            padding: collapsed && !isMobile ? '10px 0' : '10px 12px',
+            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
             background: 'transparent', border: 'none', cursor: 'pointer',
             color: '#64748b', borderRadius: '6px',
           }}
         >
           <LogOut size={16} />
-          {!collapsed && <span style={{ fontSize: '0.875rem' }}>Sign out</span>}
+          {(!collapsed || isMobile) && <span style={{ fontSize: '0.875rem' }}>Sign out</span>}
         </button>
       </div>
     </>
   )
 
-  return (
-    <>
-      {/* Mobile hamburger */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        style={{
-          position: 'fixed', top: '12px', left: '12px', zIndex: 100,
-          background: '#0f172a', border: 'none', borderRadius: '8px',
-          padding: '8px', cursor: 'pointer', color: '#ffffff',
-          display: 'none',
-        }}
-        id="mobile-menu-btn"
-      >
-        <Menu size={20} />
-      </button>
-
-      {/* Desktop sidebar */}
-      <div
-        id="desktop-sidebar"
-        style={{
-          width: collapsed ? '64px' : '220px',
-          minHeight: '100vh',
-          background: '#0f172a',
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'width 0.25s ease',
-          flexShrink: 0,
-        }}
-      >
-        {renderNav()}
-      </div>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile hamburger button */}
+        <button
+          onClick={() => setMobileOpen(true)}
           style={{
-            position: 'fixed', inset: 0, zIndex: 98,
-            background: 'rgba(0,0,0,0.5)',
+            position: 'fixed', top: '12px', left: '12px', zIndex: 100,
+            background: '#0f172a', border: 'none', borderRadius: '8px',
+            padding: '8px', cursor: 'pointer', color: '#ffffff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
           }}
-        />
-      )}
+        >
+          <Menu size={20} />
+        </button>
 
-      {/* Mobile sidebar */}
-      <div
-        id="mobile-sidebar"
-        style={{
+        {/* Overlay */}
+        {mobileOpen && (
+          <div
+            onClick={() => setMobileOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 98,
+              background: 'rgba(0,0,0,0.5)',
+            }}
+          />
+        )}
+
+        {/* Mobile sidebar drawer */}
+        <div style={{
           position: 'fixed', top: 0,
           left: mobileOpen ? 0 : '-240px',
           zIndex: 99, height: '100vh', width: '220px',
           background: '#0f172a',
-          display: 'none',
-          flexDirection: 'column',
+          display: 'flex', flexDirection: 'column',
           transition: 'left 0.25s ease',
-        }}
-      >
-        <button
-          onClick={() => setMobileOpen(false)}
-          style={{
-            position: 'absolute', top: '12px', right: '-40px',
-            background: '#0f172a', border: 'none',
-            borderRadius: '0 8px 8px 0',
-            padding: '8px', cursor: 'pointer', color: '#ffffff',
-          }}
-        >
-          <X size={20} />
-        </button>
-        {renderNav()}
-      </div>
-    </>
+          boxShadow: mobileOpen ? '4px 0 20px rgba(0,0,0,0.4)' : 'none',
+        }}>
+          {renderLinks()}
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <div style={{
+      width: collapsed ? '64px' : '220px',
+      minHeight: '100vh',
+      background: '#0f172a',
+      display: 'flex',
+      flexDirection: 'column',
+      transition: 'width 0.25s ease',
+      flexShrink: 0,
+    }}>
+      {renderLinks()}
+    </div>
   )
 }
