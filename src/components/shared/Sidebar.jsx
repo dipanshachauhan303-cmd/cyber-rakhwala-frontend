@@ -1,190 +1,224 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { Shield, Eye, EyeOff, ArrowRight, Lock, Mail, CheckCircle } from 'lucide-react'
-import { api, setAuth } from '../utils/api.js'
+import { useNavigate, useLocation } from 'react-router-dom'
+import {
+  LayoutDashboard, Wrench, FolderOpen, Shield,
+  Users, Settings, LogOut, ChevronLeft, ChevronRight,
+  Activity, Key, Database, FileText, CreditCard,
+  Bell, BarChart2, Clock, Menu, X
+} from 'lucide-react'
+import { clearAuth } from '../../utils/api.js'
 
-const DEMO_ACCOUNTS = [
-  { label: 'Law Enforcement', email: 'law@demo.com', password: 'demo123', bg: '#0f172a', hover: '#1e293b' },
-  { label: 'Admin', email: 'admin@demo.com', password: 'demo123', bg: '#dc2626', hover: '#b91c1c' },
-  { label: 'Student', email: 'student@demo.com', password: 'demo123', bg: '#7c3aed', hover: '#6d28d9' },
-]
-
-const ROLE_PATHS = {
-  'law-enforcement': '/law-enforcement/dashboard',
-  admin: '/admin/dashboard',
-  student: '/student/dashboard',
+const NAV = {
+  'law-enforcement': [
+    { icon: LayoutDashboard, label: 'Overview', path: '/law-enforcement/dashboard' },
+    { icon: Wrench, label: 'Tools', path: '/law-enforcement/tools' },
+    { icon: FolderOpen, label: 'Cases', path: '/law-enforcement/cases' },
+  ],
+  admin: [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+    { icon: Users, label: 'Users', path: '/admin/users' },
+    { icon: Clock, label: 'Registrations', path: '/admin/registrations' },
+    { icon: Wrench, label: 'Tools', path: '/admin/tools' },
+    { icon: CreditCard, label: 'Plans', path: '/admin/plans' },
+    { icon: Key, label: 'API Keys', path: '/admin/api-keys' },
+    { icon: Database, label: 'Providers', path: '/admin/providers' },
+    { icon: FileText, label: 'Content', path: '/admin/content' },
+    { icon: BarChart2, label: 'Analytics', path: '/admin/analytics' },
+    { icon: Bell, label: 'Tickets', path: '/admin/tickets' },
+    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+  ],
+  student: [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/student/dashboard' },
+    { icon: Wrench, label: 'Tools', path: '/student/tools' },
+    { icon: Activity, label: 'History', path: '/student/history' },
+  ],
 }
 
-const FEATURES = [
-  'Phone & UPI Lookup',
-  'Vehicle & Aadhaar Info',
-  'CDR & IPDR Analysis',
-  'Face Recognition',
-  'Threat Intelligence',
-]
+const ROLE_BADGE = {
+  'law-enforcement': { label: 'Law Enforcement', color: '#0ea5e9', bg: '#e0f2fe' },
+  admin: { label: 'Admin', color: '#dc2626', bg: '#fee2e2' },
+  student: { label: 'Student', color: '#7c3aed', bg: '#ede9fe' },
+}
 
-export default function Login() {
+export default function Sidebar({ role = 'law-enforcement' }) {
+  const [collapsed, setCollapsed] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const location = useLocation()
+  const links = NAV[role] || NAV['law-enforcement']
+  const badge = ROLE_BADGE[role] || ROLE_BADGE['law-enforcement']
 
-  const doLogin = async (email, password) => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await api.post('/api/auth/login', { email, password })
-      setAuth(data.token, data.user)
-      window.location.href = ROLE_PATHS[data.user.role] || '/login'
-    } catch (err) {
-      setError(err.message || 'Login failed')
-    } finally {
-      setLoading(false)
-    }
+  const handleLogout = () => {
+    clearAuth()
+    window.location.href = '/login'
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    doLogin(form.email, form.password)
+  const handleNavigate = (path) => {
+    navigate(path)
+    setMobileOpen(false)
   }
 
-  return (
-    <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex', flexDirection: 'column' }}>
-
-      {/* Mobile header */}
+  const renderNav = () => (
+    <>
+      {/* Logo */}
       <div style={{
-        background: '#0f172a',
-        padding: '20px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
+        display: 'flex', alignItems: 'center',
+        justifyContent: collapsed ? 'center' : 'space-between',
+        padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)',
+        minHeight: '64px',
       }}>
-        <div style={{ width: '36px', height: '36px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Shield size={20} color="#ffffff" />
-        </div>
-        <div>
-          <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', letterSpacing: '0.08em' }}>CYBER RAKHWALA</p>
-          <p style={{ color: '#64748b', fontSize: '0.7rem' }}>Intelligence Platform</p>
-        </div>
+        {!collapsed && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Shield size={16} color="#ffffff" />
+            </div>
+            <div>
+              <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.08em' }}>CYBER</p>
+              <p style={{ color: '#64748b', fontSize: '0.65rem' }}>RAKHWALA</p>
+            </div>
+          </div>
+        )}
+        {collapsed && <Shield size={18} color="#ffffff" />}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}
+        >
+          {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+        </button>
       </div>
 
-      {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
-        <div style={{ width: '100%', maxWidth: '420px' }}>
+      {/* Role badge */}
+      {!collapsed && (
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <span style={{
+            background: badge.bg, color: badge.color,
+            fontSize: '0.68rem', fontWeight: 700,
+            padding: '3px 10px', borderRadius: '20px',
+            textTransform: 'uppercase', letterSpacing: '0.06em',
+          }}>
+            {badge.label}
+          </span>
+        </div>
+      )}
 
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Welcome back</h2>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '24px' }}>Sign in to access the platform</p>
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Email address</label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={15} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  placeholder="you@example.com"
-                  className="cr-input"
-                  style={{ paddingLeft: '36px' }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={15} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                <input
-                  type={showPass ? 'text' : 'password'}
-                  required
-                  autoComplete="current-password"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="cr-input"
-                  style={{ paddingLeft: '36px', paddingRight: '40px' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-                >
-                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', fontSize: '0.85rem', color: '#dc2626' }}>
-                {error}
-              </div>
-            )}
-
-            <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px' }}>
-              {loading ? 'Signing in...' : (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
-                  Sign in <ArrowRight size={16} />
+      {/* Nav links */}
+      <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
+        {links.map((link) => {
+          const Icon = link.icon
+          const isActive = location.pathname === link.path
+          return (
+            <button
+              key={link.path}
+              onClick={() => handleNavigate(link.path)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center',
+                gap: '10px', padding: collapsed ? '10px 0' : '10px 16px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                background: isActive ? 'rgba(14,165,233,0.12)' : 'transparent',
+                borderRight: isActive ? '2px solid #0ea5e9' : '2px solid transparent',
+                border: 'none', cursor: 'pointer', transition: 'all 0.15s ease',
+                color: isActive ? '#0ea5e9' : '#94a3b8',
+              }}
+            >
+              <Icon size={16} />
+              {!collapsed && (
+                <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}>
+                  {link.label}
                 </span>
               )}
             </button>
-          </form>
+          )
+        })}
+      </nav>
 
-          <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', margin: '16px 0' }}>
-            Law Enforcement?{' '}
-            <Link to="/register" style={{ color: '#0ea5e9', fontWeight: 600, textDecoration: 'none' }}>Register here</Link>
-          </p>
-
-          {/* Features */}
-          <div style={{ background: '#0f172a', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-            <p style={{ color: '#64748b', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
-              Platform Features
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {FEATURES.map((f) => (
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <CheckCircle size={13} color="#06b6d4" />
-                  <span style={{ color: '#e2e8f0', fontSize: '0.82rem' }}>{f}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Demo accounts */}
-          <div>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
-              Quick demo access
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {DEMO_ACCOUNTS.map((account) => (
-                <button
-                  key={account.label}
-                  onClick={() => doLogin(account.email, account.password)}
-                  disabled={loading}
-                  style={{
-                    width: '100%', padding: '12px 16px', borderRadius: '8px',
-                    border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-                    opacity: loading ? 0.6 : 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    fontSize: '0.875rem', fontWeight: 600, color: '#ffffff',
-                    background: account.bg,
-                  }}
-                >
-                  <span>{account.label}</span>
-                  <ArrowRight size={15} color="#ffffff" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.75rem', marginTop: '20px' }}>
-            Protected by Cyber Rakhwala Security Protocol v3.0
-          </p>
-        </div>
+      {/* Logout */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '8px' }}>
+        <button
+          onClick={handleLogout}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center',
+            gap: '10px', padding: '10px 12px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            color: '#64748b', borderRadius: '6px',
+          }}
+        >
+          <LogOut size={16} />
+          {!collapsed && <span style={{ fontSize: '0.875rem' }}>Sign out</span>}
+        </button>
       </div>
-    </div>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile hamburger */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        style={{
+          position: 'fixed', top: '12px', left: '12px', zIndex: 100,
+          background: '#0f172a', border: 'none', borderRadius: '8px',
+          padding: '8px', cursor: 'pointer', color: '#ffffff',
+          display: 'none',
+        }}
+        id="mobile-menu-btn"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Desktop sidebar */}
+      <div
+        id="desktop-sidebar"
+        style={{
+          width: collapsed ? '64px' : '220px',
+          minHeight: '100vh',
+          background: '#0f172a',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'width 0.25s ease',
+          flexShrink: 0,
+        }}
+      >
+        {renderNav()}
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 98,
+            background: 'rgba(0,0,0,0.5)',
+          }}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <div
+        id="mobile-sidebar"
+        style={{
+          position: 'fixed', top: 0,
+          left: mobileOpen ? 0 : '-240px',
+          zIndex: 99, height: '100vh', width: '220px',
+          background: '#0f172a',
+          display: 'none',
+          flexDirection: 'column',
+          transition: 'left 0.25s ease',
+        }}
+      >
+        <button
+          onClick={() => setMobileOpen(false)}
+          style={{
+            position: 'absolute', top: '12px', right: '-40px',
+            background: '#0f172a', border: 'none',
+            borderRadius: '0 8px 8px 0',
+            padding: '8px', cursor: 'pointer', color: '#ffffff',
+          }}
+        >
+          <X size={20} />
+        </button>
+        {renderNav()}
+      </div>
+    </>
   )
 }
