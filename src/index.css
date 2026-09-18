@@ -214,3 +214,14 @@ html, body, #root {
   .mobile-sidebar { display: block !important; }
   .mobile-menu-btn { display: flex !important; }
 }
+@media (max-width: 768px) {
+  #desktop-sidebar {
+    display: none !important;
+  }
+  #mobile-sidebar {
+    display: flex !important;
+  }
+  #mobile-menu-btn {
+    display: flex !important;
+  }
+}
