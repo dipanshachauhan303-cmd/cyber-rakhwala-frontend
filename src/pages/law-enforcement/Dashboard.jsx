@@ -3,18 +3,18 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
 import {
-  Search, Zap, Shield, Clock, TrendingUp,
-  Phone, Car, CreditCard, Users, ArrowUpRight,
-  AlertTriangle, CheckCircle, Activity, FileText
+  Search, Zap, Shield, Clock, FileText,
+  AlertTriangle, CheckCircle, Activity, ArrowUpRight,
+  Mail, MessageCircle, Phone, Car, CreditCard
 } from 'lucide-react'
 
 const QUICK_TOOLS = [
-  { icon: Phone, label: 'Phone Lookup', desc: 'Phone number intelligence', credits: 14, color: '#f97316', path: '/law-enforcement/tools' },
-  { icon: Users, label: 'Face Recognition', desc: 'Facial analysis & matching', credits: 25, color: '#8b5cf6', path: '/law-enforcement/tools' },
-  { icon: Activity, label: 'CDR Analysis', desc: 'Call Detail Records', credits: 25, color: '#8b5cf6', path: '/law-enforcement/tools' },
-  { icon: Car, label: 'Vehicle Info', desc: 'RTO database lookup', credits: 15, color: '#f97316', path: '/law-enforcement/tools' },
-  { icon: CreditCard, label: 'UPI Lookup', desc: 'NPCI/UPI ID lookup', credits: 18, color: '#0ea5e9', path: '/law-enforcement/tools' },
-  { icon: Shield, label: 'Aadhaar Info', desc: 'UIDAI database lookup', credits: 30, color: '#ec4899', path: '/law-enforcement/tools' },
+  { icon: Phone, label: 'Phone Lookup', desc: 'Phone number intelligence', credits: 14, color: '#f97316' },
+  { icon: Activity, label: 'CDR Analysis', desc: 'Call Detail Records', credits: 25, color: '#8b5cf6' },
+  { icon: Car, label: 'Vehicle Info', desc: 'RTO database lookup', credits: 15, color: '#f97316' },
+  { icon: CreditCard, label: 'UPI Lookup', desc: 'NPCI/UPI ID lookup', credits: 18, color: '#0ea5e9' },
+  { icon: Shield, label: 'Aadhaar Info', desc: 'UIDAI database lookup', credits: 30, color: '#ec4899' },
+  { icon: Search, label: 'Person Location', desc: 'Name/Area/City lookup', credits: 20, color: '#f97316' },
 ]
 
 const RECENT_CASES = [
@@ -47,11 +47,15 @@ export default function LEDashboard() {
   const [query, setQuery] = useState('')
   const [queryType, setQueryType] = useState('auto')
   const [searching, setSearching] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
 
   useEffect(() => {
     const stored = localStorage.getItem('cr_user')
     if (!stored) { navigate('/login'); return }
     setUser(JSON.parse(stored))
+    const fn = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
   }, [navigate])
 
   const handleSearch = (e) => {
@@ -65,15 +69,15 @@ export default function LEDashboard() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar role="law-enforcement" />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
         <Topbar user={{ ...user, credits: 250 }} />
 
-        <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
           {/* Quick Investigation */}
-          <div className="cr-card" style={{ padding: '24px', marginBottom: '24px' }}>
+          <div className="cr-card" style={{ padding: isMobile ? '16px' : '24px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ width: '40px', height: '40px', background: '#e0f2fe', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '40px', height: '40px', background: '#e0f2fe', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Search size={20} color="#0284c7" />
               </div>
               <div>
@@ -82,31 +86,26 @@ export default function LEDashboard() {
               </div>
             </div>
 
-            {/* Query type tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
               {['auto', 'ip', 'domain', 'email', 'phone'].map((t) => (
                 <button
                   key={t}
                   onClick={() => setQueryType(t)}
                   style={{
-                    padding: '6px 14px',
-                    borderRadius: '6px',
-                    border: '1px solid',
+                    padding: '6px 12px', borderRadius: '6px', border: '1px solid',
                     borderColor: queryType === t ? '#0ea5e9' : '#e2e8f0',
                     background: queryType === t ? '#e0f2fe' : '#ffffff',
                     color: queryType === t ? '#0284c7' : '#64748b',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
+                    fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
                     textTransform: 'capitalize',
                   }}
                 >
-                  {t === 'auto' ? '⚡ Auto Detect' : t.toUpperCase()}
+                  {t === 'auto' ? '⚡ Auto' : t.toUpperCase()}
                 </button>
               ))}
             </div>
 
-            <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px' }}>
+            <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', flexDirection: isMobile ? 'column' : 'row' }}>
               <input
                 type="text"
                 value={query}
@@ -115,27 +114,17 @@ export default function LEDashboard() {
                 className="cr-input"
                 style={{ flex: 1, fontSize: '0.95rem' }}
               />
-              <button
-                type="submit"
-                disabled={searching}
-                className="btn-primary"
-                style={{ padding: '10px 24px', flexShrink: 0 }}
-              >
-                {searching ? 'Searching...' : (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    Investigate <ArrowUpRight size={16} />
-                  </span>
-                )}
+              <button type="submit" disabled={searching} className="btn-primary" style={{ padding: '10px 20px', whiteSpace: 'nowrap' }}>
+                {searching ? 'Searching...' : 'Investigate'}
               </button>
             </form>
-
             <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '8px' }}>
-              ⚡ ~5–15 credits per lookup based on query type
+              ⚡ ~5–15 credits per lookup
             </p>
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
             {[
               { label: 'Total Searches', value: '0', icon: Search, color: '#0ea5e9', bg: '#e0f2fe' },
               { label: 'Active Cases', value: '1', icon: FileText, color: '#10b981', bg: '#d1fae5' },
@@ -144,16 +133,16 @@ export default function LEDashboard() {
             ].map((stat) => {
               const Icon = stat.icon
               return (
-                <div key={stat.label} className="cr-card" style={{ padding: '20px' }}>
+                <div key={stat.label} className="cr-card" style={{ padding: '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div>
-                      <p style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                      <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>
                         {stat.label}
                       </p>
                       <p className="stat-number">{stat.value}</p>
                     </div>
-                    <div style={{ width: '40px', height: '40px', background: stat.bg, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon size={20} color={stat.color} />
+                    <div style={{ width: '36px', height: '36px', background: stat.bg, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={18} color={stat.color} />
                     </div>
                   </div>
                 </div>
@@ -162,52 +151,41 @@ export default function LEDashboard() {
           </div>
 
           {/* Quick Access Tools */}
-          <div className="cr-card" style={{ padding: '20px', marginBottom: '24px' }}>
+          <div className="cr-card" style={{ padding: isMobile ? '16px' : '20px', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>Quick Access Tools</h3>
-                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Launch frequently used investigation tools</p>
+                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Launch frequently used tools</p>
               </div>
               <button
                 onClick={() => navigate('/law-enforcement/tools')}
-                style={{ fontSize: '0.82rem', color: '#0ea5e9', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{ fontSize: '0.82rem', color: '#0ea5e9', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
               >
                 View all <ArrowUpRight size={14} />
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: '10px' }}>
               {QUICK_TOOLS.map((tool) => {
                 const Icon = tool.icon
                 return (
                   <button
                     key={tool.label}
-                    onClick={() => navigate(tool.path)}
+                    onClick={() => navigate('/law-enforcement/tools')}
                     className="cr-card"
-                    style={{
-                      padding: '16px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      gap: '8px',
-                      cursor: 'pointer',
-                      border: '1px solid #e2e8f0',
-                      background: '#ffffff',
-                      textAlign: 'left',
-                      width: '100%',
-                    }}
+                    style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px', cursor: 'pointer', border: '1px solid #e2e8f0', background: '#ffffff', textAlign: 'left', width: '100%' }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                      <div style={{ width: '36px', height: '36px', background: tool.color + '20', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Icon size={18} color={tool.color} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ width: '32px', height: '32px', background: tool.color + '20', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon size={16} color={tool.color} />
                       </div>
-                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#d97706', background: '#fef3c7', padding: '2px 8px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <Zap size={10} /> {tool.credits}
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#d97706', background: '#fef3c7', padding: '2px 6px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <Zap size={9} /> {tool.credits}
                       </span>
                     </div>
                     <div>
-                      <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0f172a' }}>{tool.label}</p>
-                      <p style={{ fontSize: '0.78rem', color: '#64748b' }}>{tool.desc}</p>
+                      <p style={{ fontSize: isMobile ? '0.78rem' : '0.875rem', fontWeight: 600, color: '#0f172a' }}>{tool.label}</p>
+                      {!isMobile && <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{tool.desc}</p>}
                     </div>
                   </button>
                 )
@@ -216,86 +194,57 @@ export default function LEDashboard() {
           </div>
 
           {/* Bottom grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
 
             {/* Recent Cases */}
-            <div className="cr-card" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div className="cr-card" style={{ padding: isMobile ? '16px' : '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>Recent Cases</h3>
-                <button
-                  onClick={() => navigate('/law-enforcement/cases')}
-                  style={{ fontSize: '0.82rem', color: '#0ea5e9', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  Manage cases →
+                <button onClick={() => navigate('/law-enforcement/cases')} style={{ fontSize: '0.82rem', color: '#0ea5e9', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>
+                  Manage →
                 </button>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {RECENT_CASES.map((c) => {
                   const s = STATUS_COLORS[c.status]
                   const p = PRIORITY_COLORS[c.priority]
                   return (
-                    <div
-                      key={c.id}
-                      style={{
-                        padding: '12px',
-                        background: '#f8fafc',
-                        borderRadius: '8px',
-                        border: '1px solid #e2e8f0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div>
+                    <div key={c.id} style={{ padding: '10px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                         <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a' }}>{c.title}</p>
-                        <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px' }}>{c.id} · {c.date}</p>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ background: p.bg, color: p.color, fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px', textTransform: 'capitalize' }}>
-                          {c.priority}
-                        </span>
-                        <span style={{ background: s.bg, color: s.color, fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px' }}>
-                          {s.label}
-                        </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>{c.id}</span>
+                        <span style={{ background: p.bg, color: p.color, fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px', borderRadius: '20px' }}>{c.priority}</span>
+                        <span style={{ background: s.bg, color: s.color, fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px', borderRadius: '20px' }}>{s.label}</span>
                       </div>
                     </div>
                   )
                 })}
               </div>
-
-              <button
-                onClick={() => navigate('/law-enforcement/cases')}
-                className="btn-secondary"
-                style={{ width: '100%', justifyContent: 'center', marginTop: '14px', padding: '10px' }}
-              >
+              <button onClick={() => navigate('/law-enforcement/cases')} className="btn-secondary" style={{ width: '100%', justifyContent: 'center', marginTop: '12px', padding: '10px' }}>
                 Create New Case
               </button>
             </div>
 
-            {/* Threat Intel Feed */}
-            <div className="cr-card" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            {/* Threat Feed */}
+            <div className="cr-card" style={{ padding: isMobile ? '16px' : '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>Threat Intel Feed</h3>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.78rem', color: '#10b981', fontWeight: 600 }}>
-                  <span style={{ width: '7px', height: '7px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }} />
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
+                  <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }} />
                   Live
                 </span>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {THREAT_FEED.map((item, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      padding: '12px',
-                      background: item.type === 'alert' ? '#fff5f5' : item.type === 'warning' ? '#fffbeb' : '#f8fafc',
-                      borderRadius: '8px',
-                      borderLeft: `3px solid ${item.type === 'alert' ? '#ef4444' : item.type === 'warning' ? '#f59e0b' : '#0ea5e9'}`,
-                    }}
-                  >
+                  <div key={i} style={{
+                    padding: '10px 12px', borderRadius: '8px',
+                    background: item.type === 'alert' ? '#fff5f5' : item.type === 'warning' ? '#fffbeb' : '#f8fafc',
+                    borderLeft: `3px solid ${item.type === 'alert' ? '#ef4444' : item.type === 'warning' ? '#f59e0b' : '#0ea5e9'}`,
+                  }}>
                     <p style={{ fontSize: '0.82rem', color: '#0f172a', lineHeight: 1.5 }}>{item.msg}</p>
-                    <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '4px' }}>{item.time}</p>
+                    <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '3px' }}>{item.time}</p>
                   </div>
                 ))}
               </div>
