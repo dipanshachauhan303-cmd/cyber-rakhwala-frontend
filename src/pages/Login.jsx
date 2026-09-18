@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Shield, Eye, EyeOff, ArrowRight, Lock, Mail, CheckCircle } from 'lucide-react'
 import { api, setAuth } from '../utils/api.js'
@@ -25,10 +25,17 @@ const FEATURES = [
 
 export default function Login() {
   const navigate = useNavigate()
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const fn = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
+  }, [])
 
   const doLogin = async (email, password) => {
     setLoading(true)
@@ -49,53 +56,68 @@ export default function Login() {
     doLogin(form.email, form.password)
   }
 
-  const handleDemo = (account) => {
-    doLogin(account.email, account.password)
-  }
-
   return (
     <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex' }}>
 
-      {/* Left panel */}
-      <div style={{ width: '420px', background: '#0f172a', padding: '40px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield size={22} color="#ffffff" />
+      {/* Left panel - hidden on mobile */}
+      {!isMobile && (
+        <div style={{
+          width: '420px', background: '#0f172a', padding: '40px',
+          flexShrink: 0, display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Shield size={22} color="#ffffff" />
+            </div>
+            <div>
+              <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.1em' }}>CYBER RAKHWALA</p>
+              <p style={{ color: '#64748b', fontSize: '0.72rem' }}>Intelligence Platform</p>
+            </div>
           </div>
+
           <div>
-            <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.1em' }}>CYBER RAKHWALA</p>
-            <p style={{ color: '#64748b', fontSize: '0.72rem' }}>Intelligence Platform</p>
+            <h1 style={{ color: '#ffffff', fontSize: '1.875rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px' }}>
+              Secure Intelligence <br /> at your fingertips.
+            </h1>
+            <p style={{ color: '#94a3b8', fontSize: '0.875rem', lineHeight: 1.7, marginBottom: '28px' }}>
+              OSINT tools, case management, and threat intelligence — built for law enforcement, researchers, and security professionals.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {FEATURES.map((f) => (
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle size={14} color="#06b6d4" />
+                  <span style={{ color: '#e2e8f0', fontSize: '0.875rem' }}>{f}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h1 style={{ color: '#ffffff', fontSize: '1.875rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px' }}>
-            Secure Intelligence <br /> at your fingertips.
-          </h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.875rem', lineHeight: 1.7, marginBottom: '28px' }}>
-            OSINT tools, case management, and threat intelligence — built for law enforcement, researchers, and security professionals.
+          <p style={{ color: '#475569', fontSize: '0.75rem' }}>
+            Protected by Cyber Rakhwala Security Protocol v3.0
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {FEATURES.map((f) => (
-              <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle size={14} color="#06b6d4" />
-                <span style={{ color: '#e2e8f0', fontSize: '0.875rem' }}>{f}</span>
-              </div>
-            ))}
-          </div>
         </div>
-
-        <p style={{ color: '#475569', fontSize: '0.75rem' }}>
-          Protected by Cyber Rakhwala Security Protocol v3.0
-        </p>
-      </div>
+      )}
 
       {/* Right panel */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-        <div style={{ width: '100%', maxWidth: '380px' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '20px 16px' : '24px' }}>
+        <div style={{ width: '100%', maxWidth: '400px' }}>
+
+          {/* Mobile logo */}
+          {isMobile && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
+              <div style={{ width: '38px', height: '38px', background: '#0f172a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Shield size={20} color="#ffffff" />
+              </div>
+              <div>
+                <p style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem', letterSpacing: '0.05em' }}>CYBER RAKHWALA</p>
+                <p style={{ color: '#64748b', fontSize: '0.7rem' }}>Intelligence Platform</p>
+              </div>
+            </div>
+          )}
 
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Welcome back</h2>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '28px' }}>Sign in to access the platform</p>
+          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '24px' }}>Sign in to access the platform</p>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
@@ -105,6 +127,7 @@ export default function Login() {
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   placeholder="you@example.com"
@@ -121,6 +144,7 @@ export default function Login() {
                 <input
                   type={showPass ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   placeholder="••••••••"
@@ -143,17 +167,26 @@ export default function Login() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
-              {loading ? 'Signing in...' : <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>Sign in <ArrowRight size={16} /></span>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '13px' }}
+            >
+              {loading ? 'Signing in...' : (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                  Sign in <ArrowRight size={16} />
+                </span>
+              )}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', margin: '16px 0 0' }}>
+          <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', margin: '16px 0' }}>
             Law Enforcement?{' '}
             <Link to="/register" style={{ color: '#0ea5e9', fontWeight: 600, textDecoration: 'none' }}>Register here</Link>
           </p>
 
-          <div style={{ marginTop: '24px' }}>
+          <div style={{ marginTop: '8px' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
               Quick demo access
             </p>
@@ -161,10 +194,10 @@ export default function Login() {
               {DEMO_ACCOUNTS.map((account) => (
                 <button
                   key={account.label}
-                  onClick={() => handleDemo(account)}
+                  onClick={() => doLogin(account.email, account.password)}
                   disabled={loading}
                   style={{
-                    width: '100%', padding: '10px 16px', borderRadius: '8px',
+                    width: '100%', padding: '12px 16px', borderRadius: '8px',
                     border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
                     opacity: loading ? 0.6 : 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
