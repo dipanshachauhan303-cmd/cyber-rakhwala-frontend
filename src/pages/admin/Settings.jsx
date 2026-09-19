@@ -61,6 +61,7 @@ export default function AdminSettings() {
     if (parsed.role !== 'admin') { navigate('/login'); return }
     setUser(parsed)
     const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [navigate])
@@ -77,66 +78,44 @@ export default function AdminSettings() {
   const currentSection = SECTIONS.find(s => s.id === activeSection)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9', overflowX: 'hidden' }}>
       <Sidebar role="admin" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0 }}>
         <Topbar user={user} onMenuClick={() => setMobileMenuOpen(true)} />
 
-        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
+        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '16px' : '24px' }}>
 
           <div style={{ marginBottom: '20px' }}>
             <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Settings</h1>
             <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Runtime configuration and feature toggles</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '180px 1fr', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
             {/* Section tabs */}
-            <div className="cr-card" style={{ padding: '8px', height: 'fit-content' }}>
-              {isMobile ? (
-                <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
-                  {SECTIONS.map((s) => {
-                    const Icon = s.icon
-                    return (
-                      <button
-                        key={s.id}
-                        onClick={() => setActiveSection(s.id)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '6px',
-                          padding: '8px 12px', borderRadius: '6px', border: 'none',
-                          cursor: 'pointer', whiteSpace: 'nowrap',
-                          background: activeSection === s.id ? '#e0f2fe' : 'transparent',
-                          color: activeSection === s.id ? '#0284c7' : '#64748b',
-                          fontSize: '0.82rem', fontWeight: activeSection === s.id ? 600 : 400,
-                        }}
-                      >
-                        <Icon size={14} /> {s.label}
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                SECTIONS.map((s) => {
+            <div className="cr-card" style={{ padding: '8px' }}>
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {SECTIONS.map((s) => {
                   const Icon = s.icon
                   return (
                     <button
                       key={s.id}
                       onClick={() => setActiveSection(s.id)}
                       style={{
-                        width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
-                        padding: '10px 12px', borderRadius: '6px', border: 'none',
-                        cursor: 'pointer', marginBottom: '2px',
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        padding: '8px 12px', borderRadius: '6px', border: 'none',
+                        cursor: 'pointer', whiteSpace: 'nowrap',
                         background: activeSection === s.id ? '#e0f2fe' : 'transparent',
                         color: activeSection === s.id ? '#0284c7' : '#64748b',
-                        fontSize: '0.875rem', fontWeight: activeSection === s.id ? 600 : 400,
+                        fontSize: '0.82rem', fontWeight: activeSection === s.id ? 600 : 400,
                       }}
                     >
-                      <Icon size={15} /> {s.label}
+                      <Icon size={14} /> {s.label}
                     </button>
                   )
-                })
-              )}
+                })}
+              </div>
             </div>
 
             {/* Fields */}
@@ -171,14 +150,14 @@ export default function AdminSettings() {
                         value={settings[field.key]}
                         onChange={e => setSettings({ ...settings, [field.key]: e.target.value })}
                         className="cr-input"
-                        style={{ maxWidth: isMobile ? '100%' : '400px' }}
+                        style={{ width: '100%', boxSizing: 'border-box' }}
                       />
                     )}
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
                 <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: '10px 22px' }}>
                   <Save size={15} /> {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save Changes'}
                 </button>
