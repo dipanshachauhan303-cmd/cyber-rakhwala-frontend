@@ -24,7 +24,6 @@ const FEATURES = [
 ]
 
 export default function Login() {
-  const navigate = useNavigate()
   const [isMobile, setIsMobile] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
@@ -39,14 +38,16 @@ export default function Login() {
   }, [])
 
   const doLogin = async (email, password) => {
-    if (!email?.trim() || !password?.trim()) {
-      setError('Email and password are required')
-      return
-    }
+    const e = email.trim()
+    const p = password.trim()
+    if (!e) { setError('Email is required'); return }
+    if (!p) { setError('Password is required'); return }
+    if (p.length < 3) { setError('Password is too short'); return }
+
     setLoading(true)
     setError('')
     try {
-      const data = await api.post('/api/auth/login', { email: email.trim(), password: password.trim() })
+      const data = await api.post('/api/auth/login', { email: e, password: p })
       setAuth(data.token, data.user)
       window.location.href = ROLE_PATHS[data.user.role] || '/login'
     } catch (err) {
@@ -58,8 +59,6 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!form.email.trim()) { setError('Email is required'); return }
-    if (!form.password.trim()) { setError('Password is required'); return }
     doLogin(form.email, form.password)
   }
 
@@ -68,7 +67,11 @@ export default function Login() {
 
       {/* Left panel - desktop only */}
       {!isMobile && (
-        <div style={{ width: '420px', background: '#0f172a', padding: '40px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div style={{
+          width: '420px', background: '#0f172a', padding: '40px',
+          flexShrink: 0, display: 'flex', flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Shield size={22} color="#ffffff" />
@@ -124,12 +127,13 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Email address</label>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>
+                Email address
+              </label>
               <div style={{ position: 'relative' }}>
                 <Mail size={15} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="email"
-                  required
                   autoComplete="email"
                   value={form.email}
                   onChange={e => { setForm({ ...form, email: e.target.value }); setError('') }}
@@ -141,12 +145,13 @@ export default function Login() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Password</label>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>
+                Password
+              </label>
               <div style={{ position: 'relative' }}>
                 <Lock size={15} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type={showPass ? 'text' : 'password'}
-                  required
                   autoComplete="current-password"
                   value={form.password}
                   onChange={e => { setForm({ ...form, password: e.target.value }); setError('') }}
@@ -154,7 +159,11 @@ export default function Login() {
                   className="cr-input"
                   style={{ paddingLeft: '36px', paddingRight: '40px' }}
                 />
-                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowPass(!showPass)}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
+                >
                   {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
@@ -166,7 +175,12 @@ export default function Login() {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '13px' }}>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center', padding: '13px' }}
+            >
               {loading ? 'Signing in...' : (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
                   Sign in <ArrowRight size={16} />
@@ -182,7 +196,7 @@ export default function Login() {
             </Link>
           </p>
 
-          <div style={{ marginTop: '8px' }}>
+          <div>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
               Quick demo access
             </p>
@@ -198,7 +212,7 @@ export default function Login() {
                     opacity: loading ? 0.6 : 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     fontSize: '0.875rem', fontWeight: 600, color: '#ffffff',
-                    background: account.bg, transition: 'all 0.2s ease',
+                    background: account.bg,
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = account.hover}
                   onMouseLeave={e => e.currentTarget.style.background = account.bg}
