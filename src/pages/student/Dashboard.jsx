@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Sidebar from '../../components/shared/Sidebar.jsx'
+import Topbar from '../../components/shared/Topbar.jsx'
 import {
   Search, Zap, Phone, Globe, Mail, Hash, Image,
   Link, MapPin, Database, Wifi, MessageCircle,
   Car, CreditCard, Shield, Users, Activity,
-  Clock, Bell, Download, Upload, ChevronRight,
-  BookOpen, Award, X, ArrowUpRight, LogOut, Menu
+  BookOpen, Award, X, ArrowUpRight
 } from 'lucide-react'
 import { clearAuth } from '../../utils/api.js'
 
@@ -52,14 +53,14 @@ export default function StudentDashboard() {
     if (!stored) { navigate('/login'); return }
     setUser(JSON.parse(stored))
     const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [navigate])
 
   const filtered = TOOLS.filter(t => {
     const matchCat = category === 'All' || t.category === category
-    const matchSearch = t.label.toLowerCase().includes(search.toLowerCase()) ||
-      t.code.toLowerCase().includes(search.toLowerCase())
+    const matchSearch = t.label.toLowerCase().includes(search.toLowerCase())
     return matchCat && matchSearch
   })
 
@@ -73,135 +74,36 @@ export default function StudentDashboard() {
     }, 1500)
   }
 
-  const handleLogout = () => {
-    clearAuth()
-    window.location.href = '/login'
-  }
-
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+      <Sidebar
+        role="student"
+        mobileOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
 
-      {/* Mobile overlay */}
-      {isMobile && mobileMenuOpen && (
-        <div onClick={() => setMobileMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 98 }} />
-      )}
-
-      {/* Sidebar */}
       <div style={{
-        width: '220px',
-        background: '#0f172a',
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        flexShrink: 0,
-        position: isMobile ? 'fixed' : 'relative',
-        top: 0, left: isMobile ? (mobileMenuOpen ? 0 : '-220px') : 0,
-        height: '100vh',
-        zIndex: 99,
-        transition: 'left 0.25s ease',
-        boxShadow: isMobile && mobileMenuOpen ? '4px 0 20px rgba(0,0,0,0.4)' : 'none',
+        overflow: 'hidden',
+        paddingTop: isMobile ? '56px' : '0',
+        minWidth: 0,
       }}>
-        {/* User info */}
-        <div style={{ padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', background: '#7c3aed', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>
-                {(user.name || 'S')[0]}
-              </span>
-            </div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name || 'Student Demo'}</p>
-              <p style={{ color: '#7c3aed', fontSize: '0.68rem', fontWeight: 600, textTransform: 'uppercase' }}>Student</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '6px', padding: '3px 7px', flexShrink: 0 }}>
-              <Zap size={11} color="#f59e0b" />
-              <span style={{ color: '#f59e0b', fontSize: '0.78rem', fontWeight: 700 }}>100</span>
-            </div>
-            {isMobile && (
-              <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', flexShrink: 0 }}>
-                <X size={18} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
-          {/* Category filters */}
-          <div style={{ padding: '8px 12px' }}>
-            <p style={{ color: '#64748b', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Categories</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => { setCategory(cat); if (isMobile) setMobileMenuOpen(false) }}
-                  style={{
-                    width: '100%', textAlign: 'left', padding: '7px 10px',
-                    borderRadius: '6px', border: 'none', cursor: 'pointer',
-                    background: category === cat ? 'rgba(14,165,233,0.12)' : 'transparent',
-                    color: category === cat ? '#0ea5e9' : '#94a3b8',
-                    fontSize: '0.82rem', fontWeight: category === cat ? 600 : 400,
-                    borderRight: category === cat ? '2px solid #0ea5e9' : '2px solid transparent',
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        </nav>
-
-        {/* Logout */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '8px' }}>
-          <button
-            onClick={handleLogout}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', borderRadius: '6px' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b' }}
-          >
-            <LogOut size={16} />
-            <span style={{ fontSize: '0.875rem' }}>Sign out</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0 }}>
-
-        {/* Topbar */}
-        <div style={{
-          height: isMobile ? '56px' : '64px',
-          background: '#ffffff',
-          borderBottom: '1px solid #e2e8f0',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: isMobile ? '0 16px' : '0 24px',
-          flexShrink: 0,
-          position: isMobile ? 'fixed' : 'relative',
-          top: 0, left: 0, right: 0, zIndex: 50,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {isMobile && (
-              <button onClick={() => setMobileMenuOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0f172a', display: 'flex' }}>
-                <Menu size={22} />
-              </button>
-            )}
-            <div>
-              <h1 style={{ fontSize: isMobile ? '0.9rem' : '1.25rem', fontWeight: 700, color: '#0f172a' }}>Student Dashboard</h1>
-              {!isMobile && <p style={{ fontSize: '0.78rem', color: '#64748b' }}>OSINT Learning Platform</p>}
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '8px', padding: isMobile ? '5px 8px' : '6px 12px' }}>
-              <Zap size={13} color="#d97706" />
-              <span style={{ fontWeight: 700, color: '#d97706', fontSize: '0.875rem' }}>100</span>
-              {!isMobile && <span style={{ color: '#92400e', fontSize: '0.78rem' }}>credits</span>}
-            </div>
-            <span style={{ background: '#ede9fe', color: '#7c3aed', fontSize: isMobile ? '0.65rem' : '0.75rem', fontWeight: 700, padding: isMobile ? '3px 8px' : '4px 12px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
-              {isMobile ? '1.5x' : 'Field Access (1.5x cost)'}
-            </span>
-          </div>
-        </div>
+        <Topbar
+          user={{ ...user, credits: 100 }}
+          onMenuClick={() => setMobileMenuOpen(true)}
+        />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
+
+          {/* Header */}
+          <div style={{ marginBottom: '20px' }}>
+            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
+              Student Dashboard
+            </h1>
+            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>OSINT Learning Platform — Field Access (1.5x credit cost)</p>
+          </div>
 
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
@@ -215,7 +117,7 @@ export default function StudentDashboard() {
               return (
                 <div key={stat.label} className="cr-card" style={{ padding: isMobile ? '12px' : '16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <p style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>{stat.label}</p>
+                    <p style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>{stat.label}</p>
                     <div style={{ width: '28px', height: '28px', background: stat.bg, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Icon size={14} color={stat.color} />
                     </div>
@@ -239,6 +141,26 @@ export default function StudentDashboard() {
             />
           </div>
 
+          {/* Category tabs */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                style={{
+                  padding: '5px 12px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600,
+                  border: '1px solid',
+                  borderColor: category === cat ? '#0ea5e9' : '#e2e8f0',
+                  background: category === cat ? '#e0f2fe' : '#ffffff',
+                  color: category === cat ? '#0284c7' : '#64748b',
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
           {/* Tools grid */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
             {filtered.map((tool) => {
@@ -254,8 +176,8 @@ export default function StudentDashboard() {
                     </span>
                   </div>
                   <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>{tool.label}</p>
-                  {!isMobile && <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace', marginBottom: '8px' }}>{tool.code}</p>}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: isMobile ? '8px' : '0' }}>
+                  {!isMobile && <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontFamily: 'monospace', marginBottom: '8px' }}>{tool.code}</p>}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
                     <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>{tool.category}</span>
                     <button
                       onClick={() => { setActiveTool(tool); setResult(null); setToolInput('') }}
@@ -296,7 +218,7 @@ export default function StudentDashboard() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Zap size={12} color="#d97706" /> {activeTool.credits} credits (1.5x = {Math.ceil(activeTool.credits * 1.5)})
+                  <Zap size={12} color="#d97706" /> {activeTool.credits} × 1.5 = {Math.ceil(activeTool.credits * 1.5)} credits
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button type="button" onClick={() => setActiveTool(null)} className="btn-secondary" style={{ padding: '8px 14px' }}>Cancel</button>
