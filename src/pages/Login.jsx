@@ -25,7 +25,7 @@ const FEATURES = [
 
 export default function Login() {
   const navigate = useNavigate()
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const [isMobile, setIsMobile] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -33,19 +33,24 @@ export default function Login() {
 
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [])
 
   const doLogin = async (email, password) => {
+    if (!email?.trim() || !password?.trim()) {
+      setError('Email and password are required')
+      return
+    }
     setLoading(true)
     setError('')
     try {
-      const data = await api.post('/api/auth/login', { email, password })
+      const data = await api.post('/api/auth/login', { email: email.trim(), password: password.trim() })
       setAuth(data.token, data.user)
       window.location.href = ROLE_PATHS[data.user.role] || '/login'
     } catch (err) {
-      setError(err.message || 'Login failed')
+      setError(err.message || 'Invalid credentials')
     } finally {
       setLoading(false)
     }
@@ -53,19 +58,17 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!form.email.trim()) { setError('Email is required'); return }
+    if (!form.password.trim()) { setError('Password is required'); return }
     doLogin(form.email, form.password)
   }
 
   return (
     <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex' }}>
 
-      {/* Left panel - hidden on mobile */}
+      {/* Left panel - desktop only */}
       {!isMobile && (
-        <div style={{
-          width: '420px', background: '#0f172a', padding: '40px',
-          flexShrink: 0, display: 'flex', flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}>
+        <div style={{ width: '420px', background: '#0f172a', padding: '40px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Shield size={22} color="#ffffff" />
@@ -100,7 +103,7 @@ export default function Login() {
       )}
 
       {/* Right panel */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '20px 16px' : '24px' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '24px 16px' : '24px' }}>
         <div style={{ width: '100%', maxWidth: '400px' }}>
 
           {/* Mobile logo */}
@@ -110,7 +113,7 @@ export default function Login() {
                 <Shield size={20} color="#ffffff" />
               </div>
               <div>
-                <p style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem', letterSpacing: '0.05em' }}>CYBER RAKHWALA</p>
+                <p style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem' }}>CYBER RAKHWALA</p>
                 <p style={{ color: '#64748b', fontSize: '0.7rem' }}>Intelligence Platform</p>
               </div>
             </div>
@@ -129,7 +132,7 @@ export default function Login() {
                   required
                   autoComplete="email"
                   value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
+                  onChange={e => { setForm({ ...form, email: e.target.value }); setError('') }}
                   placeholder="you@example.com"
                   className="cr-input"
                   style={{ paddingLeft: '36px' }}
@@ -146,16 +149,12 @@ export default function Login() {
                   required
                   autoComplete="current-password"
                   value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  onChange={e => { setForm({ ...form, password: e.target.value }); setError('') }}
                   placeholder="••••••••"
                   className="cr-input"
                   style={{ paddingLeft: '36px', paddingRight: '40px' }}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-                >
+                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
                   {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
@@ -163,16 +162,11 @@ export default function Login() {
 
             {error && (
               <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', fontSize: '0.85rem', color: '#dc2626' }}>
-                {error}
+                ⚠ {error}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary"
-              style={{ width: '100%', justifyContent: 'center', padding: '13px' }}
-            >
+            <button type="submit" disabled={loading} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '13px' }}>
               {loading ? 'Signing in...' : (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
                   Sign in <ArrowRight size={16} />
@@ -183,7 +177,9 @@ export default function Login() {
 
           <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', margin: '16px 0' }}>
             Law Enforcement?{' '}
-            <Link to="/register" style={{ color: '#0ea5e9', fontWeight: 600, textDecoration: 'none' }}>Register here</Link>
+            <Link to="/register" style={{ color: '#0ea5e9', fontWeight: 600, textDecoration: 'none' }}>
+              Register here
+            </Link>
           </p>
 
           <div style={{ marginTop: '8px' }}>
@@ -213,6 +209,10 @@ export default function Login() {
               ))}
             </div>
           </div>
+
+          <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.75rem', marginTop: '20px' }}>
+            Protected by Cyber Rakhwala Security Protocol v3.0
+          </p>
         </div>
       </div>
     </div>
