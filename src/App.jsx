@@ -18,6 +18,8 @@ import AdminContent from './pages/admin/Content.jsx'
 import AdminApiKeys from './pages/admin/ApiKeys.jsx'
 import AdminRegistrations from './pages/admin/Registrations.jsx'
 import StudentDashboard from './pages/student/Dashboard.jsx'
+import StudentTools from './pages/student/Tools.jsx'
+import StudentHistory from './pages/student/History.jsx'
 
 export default function App() {
   return (
@@ -104,6 +106,16 @@ export default function App() {
       <Route path="/student/dashboard" element={
         <ProtectedRoute allowedRoles={['student']}>
           <StudentDashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/tools" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentTools />
+        </ProtectedRoute>
+      } />
+      <Route path="/student/history" element={
+        <ProtectedRoute allowedRoles={['student']}>
+          <StudentHistory />
         </ProtectedRoute>
       } />
 
