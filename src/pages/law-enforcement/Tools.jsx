@@ -1,357 +1,231 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import Sidebar from '../../components/shared/Sidebar.jsx'
+import Topbar from '../../components/shared/Topbar.jsx'
 import {
-  Shield, Eye, EyeOff, ArrowRight,
-  User, Mail, Phone, Star, MapPin,
-  Building2, Lock, CheckCircle
+  Phone, Users, Activity, Car, CreditCard, Shield,
+  Search, Globe, Mail, Hash, Image, Link, MapPin,
+  Database, Wifi, MessageCircle, Zap, X, ArrowUpRight,
+  Radio, BarChart2
 } from 'lucide-react'
 
-const RANKS = [
-  'Constable', 'Head Constable', 'Assistant Sub-Inspector (ASI)',
-  'Sub-Inspector (SI)', 'Inspector', 'Deputy Superintendent (DSP)',
-  'Superintendent of Police (SP)', 'Senior SP', 'DIG', 'IG', 'ADG', 'DGP', 'Other'
+const CATEGORIES = ['All', 'OSINT', 'Telecom', 'Financial', 'Identity', 'Forensics', 'Network', 'Biometric', 'Records', 'Communication', 'Geospatial']
+
+const TOOLS = [
+  { id: 'phone-lookup', icon: Phone, label: 'Phone Lookup', desc: 'Phone number intelligence', credits: 14, category: 'OSINT', color: '#f97316' },
+  { id: 'face-recognition', icon: Users, label: 'Face Recognition', desc: 'Facial analysis & matching', credits: 25, category: 'Biometric', color: '#8b5cf6' },
+  { id: 'cdr-analysis', icon: Activity, label: 'CDR Analysis', desc: 'Call Detail Records analysis', credits: 25, category: 'Telecom', color: '#8b5cf6' },
+  { id: 'vehicle-info', icon: Car, label: 'Vehicle Info', desc: 'RTO database lookup', credits: 15, category: 'Records', color: '#f97316' },
+  { id: 'upi-lookup', icon: CreditCard, label: 'UPI Lookup', desc: 'NPCI/UPI ID lookup', credits: 18, category: 'Financial', color: '#0ea5e9' },
+  { id: 'aadhaar-info', icon: Shield, label: 'Aadhaar Info', desc: 'UIDAI database lookup', credits: 30, category: 'Identity', color: '#ec4899' },
+  { id: 'pan-lookup', icon: CreditCard, label: 'PAN Lookup', desc: 'Income Tax database', credits: 18, category: 'Financial', color: '#10b981' },
+  { id: 'ipdr-analysis', icon: Activity, label: 'IPDR Analysis', desc: 'IP Detail Records analysis', credits: 25, category: 'Telecom', color: '#8b5cf6' },
+  { id: 'person-location', icon: MapPin, label: 'Person Location', desc: 'Name/Area/City lookup', credits: 20, category: 'Records', color: '#f97316' },
+  { id: 'breach-database', icon: Database, label: 'Breach Database', desc: 'Check data breaches', credits: 30, category: 'Network', color: '#ef4444' },
+  { id: 'ip-intelligence', icon: Wifi, label: 'IP Intelligence', desc: 'Trace and analyze IP', credits: 10, category: 'Network', color: '#0ea5e9' },
+  { id: 'domain-analysis', icon: Globe, label: 'Domain Analysis', desc: 'Investigate domain info', credits: 8, category: 'OSINT', color: '#10b981' },
+  { id: 'email-forensics', icon: Mail, label: 'Email Forensics', desc: 'Analyze email headers', credits: 12, category: 'Forensics', color: '#10b981' },
+  { id: 'social-profiler', icon: Search, label: 'Social Profiler', desc: 'Social media recon', credits: 16, category: 'OSINT', color: '#ec4899' },
+  { id: 'hash-analyzer', icon: Hash, label: 'Hash Analyzer', desc: 'Verify file integrity', credits: 6, category: 'Forensics', color: '#64748b' },
+  { id: 'image-exif', icon: Image, label: 'Image EXIF', desc: 'Extract image metadata', credits: 15, category: 'Forensics', color: '#f97316' },
+  { id: 'url-scanner', icon: Link, label: 'URL Scanner', desc: 'Scan URLs for threats', credits: 10, category: 'Network', color: '#ef4444' },
+  { id: 'geolocation', icon: MapPin, label: 'Geolocation', desc: 'Geographic intelligence', credits: 12, category: 'OSINT', color: '#10b981' },
+  { id: 'dns-records', icon: Globe, label: 'DNS Records', desc: 'Query DNS records', credits: 8, category: 'Network', color: '#0ea5e9' },
+  { id: 'data-mining', icon: Database, label: 'Data Mining', desc: 'Advanced data extraction', credits: 18, category: 'OSINT', color: '#8b5cf6' },
+  { id: 'whatsapp-trace', icon: MessageCircle, label: 'WhatsApp Trace', desc: 'Trace WhatsApp IPs', credits: 20, category: 'Communication', color: '#10b981' },
+  { id: 'sdr', icon: Radio, label: 'SDR', desc: 'Software Defined Radio', credits: 20, category: 'Telecom', color: '#8b5cf6' },
+  { id: 'vehicle-search', icon: Car, label: 'Vehicle Search', desc: 'Advanced vehicle search', credits: 18, category: 'Records', color: '#f97316' },
+  { id: 'csr-analysis', icon: BarChart2, label: 'CSR Analysis', desc: 'Call Summary Records', credits: 22, category: 'Telecom', color: '#8b5cf6' },
+  { id: 'tower-dump', icon: Radio, label: 'Tower Dump Analysis', desc: 'Cell tower data analysis', credits: 35, category: 'Telecom', color: '#ef4444' },
+  { id: 'cell-id', icon: MapPin, label: 'Cell ID Location', desc: 'Cell tower ID mapping', credits: 25, category: 'Geospatial', color: '#10b981' },
+  { id: 'ip-tracker', icon: Wifi, label: 'IP Tracker', desc: 'Real-time IP tracking', credits: 15, category: 'Network', color: '#0ea5e9' },
+  { id: 'num-upi', icon: CreditCard, label: 'Number to UPI', desc: 'Find UPI IDs by number', credits: 20, category: 'Financial', color: '#10b981' },
+  { id: 'num-image', icon: Image, label: 'Number to Image', desc: 'Images by phone number', credits: 25, category: 'OSINT', color: '#ec4899' },
+  { id: 'osint-tools', icon: Search, label: 'OSINT Tools', desc: 'Open source intelligence', credits: 30, category: 'OSINT', color: '#0ea5e9' },
 ]
 
-const STATES = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
-  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
-  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
-  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
-  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
-  'Delhi', 'CBI', 'CID', 'Central Forces', 'Other'
-]
-
-export default function Register() {
+export default function LETools() {
   const navigate = useNavigate()
-  const [step, setStep] = useState(1)
-  const [showPass, setShowPass] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
-  const [idFile, setIdFile] = useState(null)
-  const [form, setForm] = useState({
-    username: '', fullName: '', email: '', contact: '',
-    rank: '', cadre: '', policeStation: '',
-    password: '', confirmPassword: '',
+  const [user, setUser] = useState({})
+  const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('All')
+  const [activeTool, setActiveTool] = useState(null)
+  const [toolInput, setToolInput] = useState('')
+  const [running, setRunning] = useState(false)
+  const [result, setResult] = useState(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('cr_user')
+    if (!stored) { navigate('/login'); return }
+    setUser(JSON.parse(stored))
+    const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
+  }, [navigate])
+
+  const filtered = TOOLS.filter(t => {
+    const matchCat = category === 'All' || t.category === category
+    const matchSearch = t.label.toLowerCase().includes(search.toLowerCase()) ||
+      t.desc.toLowerCase().includes(search.toLowerCase())
+    return matchCat && matchSearch
   })
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-    setError('')
-  }
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    if (file.size > 5 * 1024 * 1024) { setError('File size must be less than 5MB'); return }
-    if (!['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'].includes(file.type)) {
-      setError('Only PDF or Image files allowed'); return
-    }
-    setIdFile(file)
-    setError('')
-  }
-
-  const validateStep1 = () => {
-    if (!form.username.trim()) return 'Username is required'
-    if (form.username.length < 3) return 'Username must be at least 3 characters'
-    if (!form.fullName.trim()) return 'Full name is required'
-    if (!form.email.trim()) return 'Email is required'
-    if (!/\S+@\S+\.\S+/.test(form.email)) return 'Invalid email address'
-    if (!form.contact.trim()) return 'Contact number is required'
-    return null
-  }
-
-  const validateStep2 = () => {
-    if (!form.rank) return 'Rank is required'
-    if (!form.cadre) return 'Cadre/State is required'
-    if (!form.policeStation.trim()) return 'Police Station is required'
-    return null
-  }
-
-  const validateStep3 = () => {
-    if (!form.password) return 'Password is required'
-    if (form.password.length < 6) return 'Password must be at least 6 characters'
-    if (form.password !== form.confirmPassword) return 'Passwords do not match'
-    return null
-  }
-
-  const handleNext = () => {
-    const err = step === 1 ? validateStep1() : validateStep2()
-    if (err) { setError(err); return }
-    setError('')
-    setStep(step + 1)
-  }
-
-  const handleSubmit = (e) => {
+  const handleRun = (e) => {
     e.preventDefault()
-    const err = validateStep3()
-    if (err) { setError(err); return }
-    setLoading(true)
-    setTimeout(() => { setLoading(false); setSuccess(true) }, 1500)
-  }
-
-  if (success) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ textAlign: 'center', maxWidth: '420px' }}>
-          <div style={{ width: '72px', height: '72px', background: '#d1fae5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <CheckCircle size={36} color="#059669" />
-          </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '10px' }}>Registration Submitted</h2>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: '24px' }}>
-            Your registration has been submitted for verification. You will receive an email once your account is approved by the admin.
-          </p>
-          <button onClick={() => navigate('/login')} className="btn-primary" style={{ padding: '12px 28px' }}>
-            Go to Login <ArrowRight size={16} />
-          </button>
-        </div>
-      </div>
-    )
+    if (!toolInput.trim()) return
+    setRunning(true)
+    setTimeout(() => {
+      setResult({
+        message: 'Tool integration requires backend API. Demo mode active.',
+        timestamp: new Date().toLocaleTimeString(),
+      })
+      setRunning(false)
+    }, 1500)
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f1f5f9', display: 'flex' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+      <Sidebar role="law-enforcement" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      {/* Left panel */}
-      <div style={{ width: '360px', background: '#0f172a', padding: '40px', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield size={22} color="#ffffff" />
-          </div>
-          <div>
-            <p style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', letterSpacing: '0.1em' }}>CYBER RAKHWALA</p>
-            <p style={{ color: '#64748b', fontSize: '0.72rem' }}>Law Enforcement Portal</p>
-          </div>
-        </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+        <Topbar user={{ ...user, credits: 250 }} onMenuClick={() => setMobileMenuOpen(true)} />
 
-        <div>
-          <h1 style={{ color: '#ffffff', fontSize: '1.6rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '12px' }}>
-            Law Enforcement Registration
-          </h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.875rem', lineHeight: 1.7, marginBottom: '28px' }}>
-            Register your official account to access OSINT tools, CDR analysis, and investigation management.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {[
-              { s: 1, label: 'Personal Information' },
-              { s: 2, label: 'Official Details' },
-              { s: 3, label: 'Security Setup' },
-            ].map((item) => (
-              <div key={item.s} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '30px', height: '30px', borderRadius: '50%', flexShrink: 0,
-                  background: step > item.s ? '#10b981' : step === item.s ? '#0ea5e9' : 'rgba(255,255,255,0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {step > item.s
-                    ? <CheckCircle size={14} color="#fff" />
-                    : <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>{item.s}</span>
-                  }
-                </div>
-                <span style={{ fontSize: '0.875rem', color: step >= item.s ? '#ffffff' : '#64748b', fontWeight: step === item.s ? 600 : 400 }}>
-                  {item.label}
-                </span>
-              </div>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
+
+          <div style={{ marginBottom: '20px' }}>
+            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Investigation Tools</h1>
+            <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Deploy specialized tools for your investigations</p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', flex: 1, minWidth: '180px' }}>
+              <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search tools..."
+                className="cr-input"
+                style={{ paddingLeft: '32px' }}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: '8px', padding: '8px 12px', flexShrink: 0 }}>
+              <Zap size={13} color="#d97706" />
+              <span style={{ fontWeight: 700, color: '#d97706', fontSize: '0.85rem' }}>250</span>
+              <span style={{ color: '#92400e', fontSize: '0.78rem' }}>credits</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                style={{
+                  padding: '5px 12px', borderRadius: '6px', border: '1px solid',
+                  borderColor: category === cat ? '#0ea5e9' : '#e2e8f0',
+                  background: category === cat ? '#e0f2fe' : '#ffffff',
+                  color: category === cat ? '#0284c7' : '#64748b',
+                  fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                {cat}
+              </button>
             ))}
           </div>
-        </div>
 
-        <p style={{ color: '#475569', fontSize: '0.75rem' }}>
-          All registrations are verified by admin before access is granted.
-        </p>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
+            {filtered.map((tool) => {
+              const Icon = tool.icon
+              return (
+                <div key={tool.id} className="cr-card" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div style={{ width: '36px', height: '36px', background: tool.color + '20', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={18} color={tool.color} />
+                    </div>
+                    <span style={{ background: '#fef3c7', color: '#d97706', fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <Zap size={9} /> {tool.credits}
+                    </span>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>{tool.label}</p>
+                    {!isMobile && <p style={{ fontSize: '0.72rem', color: '#64748b' }}>{tool.desc}</p>}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>
+                      {tool.category}
+                    </span>
+                    <button
+                      onClick={() => { setActiveTool(tool); setToolInput(''); setResult(null) }}
+                      style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                    >
+                      Launch <ArrowUpRight size={11} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </main>
       </div>
 
-      {/* Right panel */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', overflowY: 'auto' }}>
-        <div style={{ width: '100%', maxWidth: '460px' }}>
-
-          {/* Progress bar */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
-            {[1, 2, 3].map((s) => (
-              <div key={s} style={{ flex: 1, height: '4px', borderRadius: '2px', background: step >= s ? '#0ea5e9' : '#e2e8f0', transition: 'background 0.3s' }} />
-            ))}
-          </div>
-
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
-            {step === 1 ? 'Personal Information' : step === 2 ? 'Official Details' : 'Security Setup'}
-          </h2>
-          <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '24px' }}>Step {step} of 3</p>
-
-          {error && (
-            <div style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', fontSize: '0.85rem', color: '#dc2626', marginBottom: '16px' }}>
-              {error}
-            </div>
-          )}
-
-          {/* Step 1 — Personal Info */}
-          {step === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {[
-                { name: 'username', label: 'USERNAME', placeholder: 'Choose a unique username', icon: User, type: 'text' },
-                { name: 'fullName', label: 'FULL NAME', placeholder: "Officer's full name", icon: User, type: 'text' },
-                { name: 'email', label: 'EMAIL', placeholder: 'your@email.com', icon: Mail, type: 'email' },
-                { name: 'contact', label: 'CONTACT NUMBER', placeholder: '+91XXXXXXXXXX', icon: Phone, type: 'tel' },
-              ].map((field) => {
-                const Icon = field.icon
-                return (
-                  <div key={field.name}>
-                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px', letterSpacing: '0.06em' }}>{field.label}</label>
-                    <div style={{ position: 'relative' }}>
-                      <Icon size={14} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                      <input
-                        type={field.type}
-                        name={field.name}
-                        value={form[field.name]}
-                        onChange={handleChange}
-                        placeholder={field.placeholder}
-                        className="cr-input"
-                        style={{ paddingLeft: '36px' }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-              <button onClick={handleNext} className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', marginTop: '4px' }}>
-                Next <ArrowRight size={16} />
+      {/* Tool Modal */}
+      {activeTool && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '480px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', background: activeTool.color + '20', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <activeTool.icon size={20} color={activeTool.color} />
+                </div>
+                <div>
+                  <p style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>{activeTool.label}</p>
+                  <p style={{ fontSize: '0.78rem', color: '#64748b' }}>{activeTool.desc}</p>
+                </div>
+              </div>
+              <button onClick={() => { setActiveTool(null); setResult(null); setToolInput('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+                <X size={20} />
               </button>
             </div>
-          )}
 
-          {/* Step 2 — Official Details */}
-          {step === 2 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <form onSubmit={handleRun} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px', letterSpacing: '0.06em' }}>RANK</label>
-                <div style={{ position: 'relative' }}>
-                  <Star size={14} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <select name="rank" value={form.rank} onChange={handleChange} className="cr-input" style={{ paddingLeft: '36px' }}>
-                    <option value="">e.g. Sub-Inspector, DSP</option>
-                    {RANKS.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Query Input</label>
+                <input
+                  type="text"
+                  value={toolInput}
+                  onChange={e => setToolInput(e.target.value)}
+                  placeholder={`Enter ${activeTool.label} query...`}
+                  className="cr-input"
+                  autoFocus
+                />
               </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px', letterSpacing: '0.06em' }}>CADRE (STATE)</label>
-                <div style={{ position: 'relative' }}>
-                  <MapPin size={14} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <select name="cadre" value={form.cadre} onChange={handleChange} className="cr-input" style={{ paddingLeft: '36px' }}>
-                    <option value="">e.g. Maharashtra, Delhi</option>
-                    {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px', letterSpacing: '0.06em' }}>POLICE STATION</label>
-                <div style={{ position: 'relative' }}>
-                  <Building2 size={14} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    name="policeStation"
-                    value={form.policeStation}
-                    onChange={handleChange}
-                    placeholder="Serving Police Station"
-                    className="cr-input"
-                    style={{ paddingLeft: '36px' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px', letterSpacing: '0.06em' }}>UPLOAD ID CARD</label>
-                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 14px', background: '#f8fafc' }}>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileChange}
-                    style={{ width: '100%', fontSize: '0.85rem', color: '#64748b' }}
-                  />
-                  <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '6px' }}>
-                    ℹ Deleted after verification (Max 5MB. PDF/Image)
-                  </p>
-                </div>
-                {idFile && (
-                  <p style={{ fontSize: '0.75rem', color: '#059669', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <CheckCircle size={12} /> {idFile.name} selected
-                  </p>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                <button onClick={() => setStep(1)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '12px' }}>Back</button>
-                <button onClick={handleNext} className="btn-primary" style={{ flex: 2, justifyContent: 'center', padding: '12px' }}>
-                  Next <ArrowRight size={16} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3 — Security */}
-          {step === 3 && (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px', letterSpacing: '0.06em' }}>PASSWORD</label>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={14} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="Min 6 characters"
-                    className="cr-input"
-                    style={{ paddingLeft: '36px', paddingRight: '40px' }}
-                  />
-                  <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
-                    {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.82rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Zap size={13} color="#d97706" /> {activeTool.credits} credits
+                </span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button type="button" onClick={() => { setActiveTool(null); setResult(null) }} className="btn-secondary" style={{ padding: '8px 14px' }}>Cancel</button>
+                  <button type="submit" disabled={running || !toolInput.trim()} className="btn-primary" style={{ padding: '8px 18px' }}>
+                    {running ? 'Running...' : 'Run Tool'}
                   </button>
                 </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px', letterSpacing: '0.06em' }}>CONFIRM PASSWORD</label>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={14} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-                  <input
-                    type={showConfirm ? 'text' : 'password'}
-                    name="confirmPassword"
-                    value={form.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="Re-enter password"
-                    className="cr-input"
-                    style={{ paddingLeft: '36px', paddingRight: '40px' }}
-                  />
-                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
-                    {showConfirm ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '12px 14px', fontSize: '0.8rem', color: '#166534' }}>
-                <p style={{ fontWeight: 700, marginBottom: '6px' }}>Before submitting:</p>
-                <ul style={{ paddingLeft: '16px', lineHeight: 1.9, margin: 0 }}>
-                  <li>Ensure all details match your official ID</li>
-                  <li>Your ID card will be deleted after verification</li>
-                  <li>Admin approval may take 24–48 hours</li>
-                </ul>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                <button type="button" onClick={() => setStep(2)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '12px' }}>Back</button>
-                <button type="submit" disabled={loading} style={{ flex: 2, justifyContent: 'center', padding: '12px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {loading ? 'Submitting...' : <><span>Register</span> <ArrowRight size={16} /></>}
-                </button>
               </div>
             </form>
-          )}
 
-          <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#64748b', marginTop: '24px' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: '#0ea5e9', fontWeight: 600, textDecoration: 'none' }}>Sign In</Link>
-          </p>
+            {result && (
+              <div style={{ marginTop: '16px', padding: '14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
+                <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#166534', marginBottom: '6px' }}>✓ Query processed</p>
+                <p style={{ fontSize: '0.82rem', color: '#15803d' }}>{result.message}</p>
+                <p style={{ fontSize: '0.72rem', color: '#86efac', marginTop: '4px' }}>{result.timestamp}</p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
