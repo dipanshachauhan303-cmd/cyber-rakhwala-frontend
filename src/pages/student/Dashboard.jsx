@@ -8,7 +8,6 @@ import {
   Car, CreditCard, Shield, Users, Activity,
   BookOpen, Award, X, ArrowUpRight
 } from 'lucide-react'
-import { clearAuth } from '../../utils/api.js'
 
 const TOOLS = [
   { id: 'ip-tracer', icon: Wifi, label: 'IP Tracer', code: 'trace-ip', credits: 23, category: 'Network' },
@@ -35,6 +34,13 @@ const TOOLS = [
 ]
 
 const CATEGORIES = ['All', 'Network', 'OSINT', 'Forensics', 'Threat', 'Geospatial', 'Security', 'Communication', 'Biometric', 'Records', 'Financial', 'Identity', 'Telecom']
+
+const STATS = [
+  { label: 'Tools Available', value: '21', icon: BookOpen, color: '#0ea5e9', bg: '#e0f2fe' },
+  { label: 'Credits Left', value: '100', icon: Zap, color: '#d97706', bg: '#fef3c7' },
+  { label: 'Scans Done', value: '0', icon: Search, color: '#10b981', bg: '#d1fae5' },
+  { label: 'Achievements', value: '0', icon: Award, color: '#8b5cf6', bg: '#ede9fe' },
+]
 
 export default function StudentDashboard() {
   const navigate = useNavigate()
@@ -69,31 +75,20 @@ export default function StudentDashboard() {
     if (!toolInput.trim()) return
     setRunning(true)
     setTimeout(() => {
-      setResult({ message: 'Tool integration requires backend API. Demo mode active.', timestamp: new Date().toLocaleTimeString() })
+      setResult({
+        message: 'Tool integration requires backend API. Demo mode active.',
+        timestamp: new Date().toLocaleTimeString(),
+      })
       setRunning(false)
     }, 1500)
   }
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
-      <Sidebar
-        role="student"
-        mobileOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      />
+      <Sidebar role="student" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        paddingTop: isMobile ? '56px' : '0',
-        minWidth: 0,
-      }}>
-        <Topbar
-          user={{ ...user, credits: 100 }}
-          onMenuClick={() => setMobileMenuOpen(true)}
-        />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0 }}>
+        <Topbar user={{ ...user, credits: 100 }} onMenuClick={() => setMobileMenuOpen(true)} />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
@@ -102,27 +97,31 @@ export default function StudentDashboard() {
             <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
               Student Dashboard
             </h1>
-            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>OSINT Learning Platform — Field Access (1.5x credit cost)</p>
+            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
+              OSINT Learning Platform — Field Access (1.5x credit cost)
+            </p>
           </div>
 
-          {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-            {[
-              { label: 'Tools', value: TOOLS.length, icon: BookOpen, color: '#0ea5e9', bg: '#e0f2fe' },
-              { label: 'Credits', value: '100', icon: Zap, color: '#d97706', bg: '#fef3c7' },
-              { label: 'Scans', value: '0', icon: Search, color: '#10b981', bg: '#d1fae5' },
-              { label: 'Awards', value: '0', icon: Award, color: '#8b5cf6', bg: '#ede9fe' },
-            ].map((stat) => {
+          {/* Stats - 2x2 on mobile, 4 columns on desktop */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+            gap: '12px',
+            marginBottom: '20px',
+          }}>
+            {STATS.map((stat) => {
               const Icon = stat.icon
               return (
-                <div key={stat.label} className="cr-card" style={{ padding: isMobile ? '12px' : '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <p style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>{stat.label}</p>
-                    <div style={{ width: '28px', height: '28px', background: stat.bg, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div key={stat.label} className="cr-card" style={{ padding: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <p style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {isMobile ? stat.label.split(' ')[0] : stat.label}
+                    </p>
+                    <div style={{ width: '28px', height: '28px', background: stat.bg, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon size={14} color={stat.color} />
                     </div>
                   </div>
-                  <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{stat.value}</p>
+                  <p style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', lineHeight: 1 }}>{stat.value}</p>
                 </div>
               )
             })}
@@ -162,7 +161,11 @@ export default function StudentDashboard() {
           </div>
 
           {/* Tools grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+            gap: '12px',
+          }}>
             {filtered.map((tool) => {
               const Icon = tool.icon
               return (
@@ -176,9 +179,13 @@ export default function StudentDashboard() {
                     </span>
                   </div>
                   <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>{tool.label}</p>
-                  {!isMobile && <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontFamily: 'monospace', marginBottom: '8px' }}>{tool.code}</p>}
+                  {!isMobile && (
+                    <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontFamily: 'monospace', marginBottom: '6px' }}>{tool.code}</p>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-                    <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>{tool.category}</span>
+                    <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>
+                      {tool.category}
+                    </span>
                     <button
                       onClick={() => { setActiveTool(tool); setResult(null); setToolInput('') }}
                       style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
@@ -207,14 +214,25 @@ export default function StudentDashboard() {
                   <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>{activeTool.code}</p>
                 </div>
               </div>
-              <button onClick={() => { setActiveTool(null); setResult(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+              <button
+                onClick={() => { setActiveTool(null); setResult(null) }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
+              >
                 <X size={18} />
               </button>
             </div>
+
             <form onSubmit={handleRun} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Input</label>
-                <input type="text" value={toolInput} onChange={e => setToolInput(e.target.value)} placeholder={`Enter query for ${activeTool.label}...`} className="cr-input" autoFocus />
+                <input
+                  type="text"
+                  value={toolInput}
+                  onChange={e => setToolInput(e.target.value)}
+                  placeholder={`Enter query for ${activeTool.label}...`}
+                  className="cr-input"
+                  autoFocus
+                />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -228,6 +246,7 @@ export default function StudentDashboard() {
                 </div>
               </div>
             </form>
+
             {result && (
               <div style={{ marginTop: '14px', padding: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
                 <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#166534', marginBottom: '3px' }}>✓ Query processed</p>
