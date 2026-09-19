@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
-import {
-  Wrench, Search, Edit2, Save, X,
-  Eye, EyeOff, Zap, ToggleLeft, ToggleRight
-} from 'lucide-react'
+import { Wrench, Search, Edit2, Save, X, Zap, ToggleLeft, ToggleRight } from 'lucide-react'
 
 const INITIAL_TOOLS = [
   { id: 1, name: 'Phone Lookup', code: 'phone-intel', category: 'OSINT', credits: 14, visible: true, roles: ['law-enforcement', 'student'] },
@@ -29,6 +26,15 @@ const INITIAL_TOOLS = [
   { id: 19, name: 'DNS Records', code: 'dns-enum', category: 'Network', credits: 8, visible: true, roles: ['law-enforcement', 'student'] },
   { id: 20, name: 'Data Mining', code: 'datamine', category: 'OSINT', credits: 18, visible: false, roles: ['law-enforcement'] },
   { id: 21, name: 'WhatsApp Trace', code: 'wa-trace', category: 'Communication', credits: 20, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 22, name: 'SDR', code: 'sdr', category: 'Telecom', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 23, name: 'Vehicle Search', code: 'vehicle-search', category: 'Records', credits: 18, visible: true, roles: ['law-enforcement'] },
+  { id: 24, name: 'CSR Analysis', code: 'csr-analysis', category: 'Telecom', credits: 22, visible: true, roles: ['law-enforcement'] },
+  { id: 25, name: 'Tower Dump Analysis', code: 'tower-dump', category: 'Telecom', credits: 35, visible: true, roles: ['law-enforcement'] },
+  { id: 26, name: 'Cell ID Location', code: 'cell-id', category: 'Geospatial', credits: 25, visible: true, roles: ['law-enforcement'] },
+  { id: 27, name: 'IP Tracker', code: 'ip-tracker', category: 'Network', credits: 15, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 28, name: 'Number to UPI', code: 'num-upi', category: 'Financial', credits: 20, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 29, name: 'Number to Image', code: 'num-image', category: 'OSINT', credits: 25, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 30, name: 'OSINT Tools', code: 'osint-tools', category: 'OSINT', credits: 30, visible: true, roles: ['law-enforcement', 'student'] },
 ]
 
 const ROLE_COLORS = {
@@ -45,6 +51,8 @@ export default function AdminTools() {
   const [editTool, setEditTool] = useState(null)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('cr_user')
@@ -52,6 +60,10 @@ export default function AdminTools() {
     const parsed = JSON.parse(stored)
     if (parsed.role !== 'admin') { navigate('/login'); return }
     setUser(parsed)
+    const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
   }, [navigate])
 
   const filtered = tools.filter(t =>
@@ -60,23 +72,16 @@ export default function AdminTools() {
     t.code.toLowerCase().includes(search.toLowerCase())
   )
 
-  const toggleVisible = (id) => {
-    setTools(tools.map(t => t.id === id ? { ...t, visible: !t.visible } : t))
-  }
+  const toggleVisible = (id) => setTools(tools.map(t => t.id === id ? { ...t, visible: !t.visible } : t))
 
-  const openEdit = (tool) => {
-    setEditTool(tool)
-    setForm({ ...tool, roles: tool.roles.join(', ') })
-  }
+  const openEdit = (tool) => { setEditTool(tool); setForm({ ...tool, roles: tool.roles.join(', ') }) }
 
   const handleSave = (e) => {
     e.preventDefault()
     setSaving(true)
     setTimeout(() => {
       setTools(tools.map(t => t.id === editTool.id ? {
-        ...t,
-        name: form.name,
-        credits: Number(form.credits),
+        ...t, name: form.name, credits: Number(form.credits),
         roles: form.roles.split(',').map(r => r.trim()).filter(Boolean),
       } : t))
       setEditTool(null)
@@ -86,130 +91,138 @@ export default function AdminTools() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
-      <Sidebar role="admin" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar user={user} />
-        <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+      <Sidebar role="admin" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+        <Topbar user={user} onMenuClick={() => setMobileMenuOpen(true)} />
+
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Tools</h1>
-              <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Tool visibility, credits, and role access control</p>
+              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Tools</h1>
+              <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Tool visibility, credits, and role access</p>
             </div>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                {tools.filter(t => t.visible).length}/{tools.length} visible
-              </span>
-            </div>
+            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+              {tools.filter(t => t.visible).length}/{tools.length} visible
+            </span>
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
             {[
-              { label: 'Total Tools', value: tools.length, color: '#0ea5e9', bg: '#e0f2fe' },
-              { label: 'Visible', value: tools.filter(t => t.visible).length, color: '#10b981', bg: '#d1fae5' },
-              { label: 'Hidden', value: tools.filter(t => !t.visible).length, color: '#64748b', bg: '#f1f5f9' },
-              { label: 'Avg Credits', value: Math.round(tools.reduce((a, t) => a + t.credits, 0) / tools.length), color: '#d97706', bg: '#fef3c7' },
+              { label: 'Total', value: tools.length, color: '#0ea5e9' },
+              { label: 'Visible', value: tools.filter(t => t.visible).length, color: '#10b981' },
+              { label: 'Hidden', value: tools.filter(t => !t.visible).length, color: '#64748b' },
+              { label: 'Avg Credits', value: Math.round(tools.reduce((a, t) => a + t.credits, 0) / tools.length), color: '#d97706' },
             ].map((s) => (
-              <div key={s.label} className="cr-card" style={{ padding: '18px' }}>
-                <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>{s.label}</p>
-                <p style={{ fontSize: '2rem', fontWeight: 700, color: s.color }}>{s.value}</p>
+              <div key={s.label} className="cr-card" style={{ padding: '14px' }}>
+                <p style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{s.label}</p>
+                <p style={{ fontSize: '1.75rem', fontWeight: 700, color: s.color }}>{s.value}</p>
               </div>
             ))}
           </div>
 
           {/* Search */}
-          <div style={{ position: 'relative', marginBottom: '16px', maxWidth: '300px' }}>
+          <div style={{ position: 'relative', marginBottom: '14px', maxWidth: '300px' }}>
             <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search tools..."
-              className="cr-input"
-              style={{ paddingLeft: '32px' }}
-            />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tools..." className="cr-input" style={{ paddingLeft: '32px' }} />
           </div>
 
-          {/* Tools table */}
-          <div className="cr-card" style={{ overflow: 'hidden' }}>
-            <table className="cr-table">
-              <thead>
-                <tr>
-                  <th>Tool</th>
-                  <th>Category</th>
-                  <th>Credits</th>
-                  <th>Roles</th>
-                  <th>Visibility</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((tool) => (
-                  <tr key={tool.id} style={{ opacity: tool.visible ? 1 : 0.5 }}>
-                    <td>
-                      <div>
-                        <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0f172a' }}>{tool.name}</p>
-                        <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'JetBrains Mono, monospace' }}>{tool.code}</p>
-                      </div>
-                    </td>
-                    <td>
-                      <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.72rem', fontWeight: 600, padding: '3px 10px', borderRadius: '20px' }}>
-                        {tool.category}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Zap size={12} color="#d97706" />
-                        <span style={{ fontWeight: 700, color: '#d97706', fontFamily: 'JetBrains Mono, monospace' }}>{tool.credits}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                        {tool.roles.map(r => {
-                          const rc = ROLE_COLORS[r] || { bg: '#f1f5f9', color: '#64748b' }
-                          return (
-                            <span key={r} style={{ background: rc.bg, color: rc.color, fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: '20px', textTransform: 'capitalize', whiteSpace: 'nowrap' }}>
-                              {r === 'law-enforcement' ? 'Law' : r}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => toggleVisible(tool.id)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: tool.visible ? '#0ea5e9' : '#94a3b8' }}
-                      >
-                        {tool.visible
-                          ? <><ToggleRight size={22} color="#0ea5e9" /> <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>Visible</span></>
-                          : <><ToggleLeft size={22} color="#94a3b8" /> <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>Hidden</span></>
-                        }
-                      </button>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => openEdit(tool)}
-                        style={{ background: '#e0f2fe', border: '1px solid #bae6fd', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', color: '#0284c7', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', fontWeight: 600 }}
-                      >
-                        <Edit2 size={13} /> Edit
-                      </button>
-                    </td>
+          {/* Mobile cards */}
+          {isMobile ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {filtered.map((tool) => (
+                <div key={tool.id} className="cr-card" style={{ padding: '14px', opacity: tool.visible ? 1 : 0.5 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div>
+                      <p style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{tool.name}</p>
+                      <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>{tool.code}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Zap size={12} color="#d97706" />
+                      <span style={{ fontWeight: 700, color: '#d97706', fontSize: '0.82rem' }}>{tool.credits}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <button onClick={() => toggleVisible(tool.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', color: tool.visible ? '#0ea5e9' : '#94a3b8', padding: 0 }}>
+                      {tool.visible ? <ToggleRight size={20} color="#0ea5e9" /> : <ToggleLeft size={20} color="#94a3b8" />}
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{tool.visible ? 'Visible' : 'Hidden'}</span>
+                    </button>
+                    <button onClick={() => openEdit(tool)} style={{ background: '#e0f2fe', border: '1px solid #bae6fd', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', color: '#0284c7', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Edit2 size={12} /> Edit
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="cr-card" style={{ overflow: 'hidden' }}>
+              <table className="cr-table">
+                <thead>
+                  <tr>
+                    <th>Tool</th>
+                    <th>Category</th>
+                    <th>Credits</th>
+                    <th>Roles</th>
+                    <th>Visibility</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {filtered.map((tool) => (
+                    <tr key={tool.id} style={{ opacity: tool.visible ? 1 : 0.5 }}>
+                      <td>
+                        <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0f172a' }}>{tool.name}</p>
+                        <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>{tool.code}</p>
+                      </td>
+                      <td>
+                        <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: '20px' }}>{tool.category}</span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Zap size={11} color="#d97706" />
+                          <span style={{ fontWeight: 700, color: '#d97706', fontFamily: 'monospace' }}>{tool.credits}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {tool.roles.map(r => {
+                            const rc = ROLE_COLORS[r] || { bg: '#f1f5f9', color: '#64748b' }
+                            return (
+                              <span key={r} style={{ background: rc.bg, color: rc.color, fontSize: '0.62rem', fontWeight: 700, padding: '2px 6px', borderRadius: '20px', whiteSpace: 'nowrap' }}>
+                                {r === 'law-enforcement' ? 'Law' : r}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      </td>
+                      <td>
+                        <button onClick={() => toggleVisible(tool.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', color: tool.visible ? '#0ea5e9' : '#94a3b8', padding: 0 }}>
+                          {tool.visible ? <ToggleRight size={22} color="#0ea5e9" /> : <ToggleLeft size={22} color="#94a3b8" />}
+                          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{tool.visible ? 'Visible' : 'Hidden'}</span>
+                        </button>
+                      </td>
+                      <td>
+                        <button onClick={() => openEdit(tool)} style={{ background: '#e0f2fe', border: '1px solid #bae6fd', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', color: '#0284c7', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Edit2 size={12} /> Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </main>
       </div>
 
       {/* Edit Modal */}
       {editTool && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '440px', padding: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>Edit Tool</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '420px', padding: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Edit Tool</h3>
               <button onClick={() => setEditTool(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
             </div>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -227,9 +240,9 @@ export default function AdminTools() {
                 <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '4px' }}>Options: law-enforcement, student, admin</p>
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setEditTool(null)} className="btn-secondary" style={{ padding: '10px 20px' }}>Cancel</button>
-                <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '10px 20px' }}>
-                  <Save size={15} /> {saving ? 'Saving...' : 'Save Changes'}
+                <button type="button" onClick={() => setEditTool(null)} className="btn-secondary" style={{ padding: '10px 18px' }}>Cancel</button>
+                <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '10px 18px' }}>
+                  <Save size={14} /> {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </form>

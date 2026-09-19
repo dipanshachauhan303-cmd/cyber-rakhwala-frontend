@@ -22,6 +22,8 @@ export default function AdminPlans() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('cr_user')
@@ -29,19 +31,14 @@ export default function AdminPlans() {
     const parsed = JSON.parse(stored)
     if (parsed.role !== 'admin') { navigate('/login'); return }
     setUser(parsed)
+    const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
   }, [navigate])
 
-  const openCreate = () => {
-    setEditPlan(null)
-    setForm(EMPTY_FORM)
-    setShowModal(true)
-  }
-
-  const openEdit = (plan) => {
-    setEditPlan(plan)
-    setForm({ ...plan, features: plan.features.join(', ') })
-    setShowModal(true)
-  }
+  const openCreate = () => { setEditPlan(null); setForm(EMPTY_FORM); setShowModal(true) }
+  const openEdit = (plan) => { setEditPlan(plan); setForm({ ...plan, features: plan.features.join(', ') }); setShowModal(true) }
 
   const handleSave = (e) => {
     e.preventDefault()
@@ -64,75 +61,66 @@ export default function AdminPlans() {
     }, 700)
   }
 
-  const handleDelete = (id) => {
-    setPlans(plans.filter(p => p.id !== id))
-    setDeleteConfirm(null)
-  }
-
-  const toggleActive = (id) => {
-    setPlans(plans.map(p => p.id === id ? { ...p, active: !p.active } : p))
-  }
+  const handleDelete = (id) => { setPlans(plans.filter(p => p.id !== id)); setDeleteConfirm(null) }
+  const toggleActive = (id) => setPlans(plans.map(p => p.id === id ? { ...p, active: !p.active } : p))
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
-      <Sidebar role="admin" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar user={user} />
-        <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+      <Sidebar role="admin" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+        <Topbar user={user} onMenuClick={() => setMobileMenuOpen(true)} />
+
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Plans</h1>
+              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Plans</h1>
               <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Credits and subscription management</p>
             </div>
-            <button onClick={openCreate} className="btn-primary" style={{ padding: '10px 20px' }}>
-              <Plus size={16} /> Add Plan
+            <button onClick={openCreate} className="btn-primary" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Plus size={16} /> {!isMobile && 'Add Plan'}
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '16px' }}>
             {plans.map((plan) => (
-              <div key={plan.id} className="cr-card" style={{ padding: '22px', borderTop: `3px solid ${plan.color}`, opacity: plan.active ? 1 : 0.6 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div key={plan.id} className="cr-card" style={{ padding: '20px', borderTop: `3px solid ${plan.color}`, opacity: plan.active ? 1 : 0.6 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{plan.name}</h3>
-                      <span style={{ background: plan.active ? '#d1fae5' : '#f1f5f9', color: plan.active ? '#059669' : '#94a3b8', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px' }}>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>{plan.name}</h3>
+                      <span style={{ background: plan.active ? '#d1fae5' : '#f1f5f9', color: plan.active ? '#059669' : '#94a3b8', fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: '20px' }}>
                         {plan.active ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                    <p style={{ fontSize: '1.5rem', fontWeight: 700, color: plan.color }}>
+                    <p style={{ fontSize: '1.4rem', fontWeight: 700, color: plan.color }}>
                       {plan.price === 0 ? 'Free' : `₹${plan.price.toLocaleString()}`}
-                      {plan.price > 0 && <span style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 400 }}>/{plan.duration}</span>}
+                      {plan.price > 0 && <span style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 400 }}>/{plan.duration}</span>}
                     </p>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '6px 12px' }}>
-                    <Zap size={14} color="#d97706" />
-                    <span style={{ fontWeight: 700, color: '#d97706', fontSize: '0.9rem' }}>{plan.credits}</span>
-                    <span style={{ color: '#92400e', fontSize: '0.78rem' }}>credits</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '6px 10px' }}>
+                    <Zap size={13} color="#d97706" />
+                    <span style={{ fontWeight: 700, color: '#d97706', fontSize: '0.875rem' }}>{plan.credits}</span>
                   </div>
                 </div>
 
-                <ul style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '14px' }}>
                   {plan.features.map((f) => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: '#64748b' }}>
-                      <Check size={13} color={plan.color} />
-                      {f}
+                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: '#64748b' }}>
+                      <Check size={12} color={plan.color} /> {f}
                     </li>
                   ))}
                 </ul>
 
-                <div style={{ display: 'flex', gap: '6px', borderTop: '1px solid #e2e8f0', paddingTop: '14px' }}>
-                  <button onClick={() => openEdit(plan)} className="btn-secondary" style={{ padding: '7px 14px', flex: 1, justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '6px', borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
+                  <button onClick={() => openEdit(plan)} className="btn-secondary" style={{ padding: '6px 12px', flex: 1, justifyContent: 'center', fontSize: '0.82rem' }}>
                     <Edit2 size={13} /> Edit
                   </button>
-                  <button
-                    onClick={() => toggleActive(plan.id)}
-                    style={{ padding: '7px 14px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, color: '#64748b', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
-                  >
+                  <button onClick={() => toggleActive(plan.id)} style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, color: '#64748b', flex: 1 }}>
                     {plan.active ? 'Deactivate' : 'Activate'}
                   </button>
-                  <button onClick={() => setDeleteConfirm(plan.id)} style={{ padding: '7px 12px', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center' }}>
+                  <button onClick={() => setDeleteConfirm(plan.id)} style={{ padding: '6px 10px', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center' }}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -144,10 +132,10 @@ export default function AdminPlans() {
 
       {/* Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '460px', padding: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{editPlan ? 'Edit Plan' : 'Create Plan'}</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '460px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>{editPlan ? 'Edit Plan' : 'Create Plan'}</h3>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
             </div>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -175,12 +163,12 @@ export default function AdminPlans() {
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Features (comma separated)</label>
-                <textarea value={form.features} onChange={e => setForm({ ...form, features: e.target.value })} placeholder="All tools, Priority access, CDR Analysis" className="cr-input" rows={3} style={{ resize: 'vertical' }} />
+                <textarea value={form.features} onChange={e => setForm({ ...form, features: e.target.value })} placeholder="All tools, Priority access" className="cr-input" rows={3} style={{ resize: 'vertical' }} />
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary" style={{ padding: '10px 20px' }}>Cancel</button>
-                <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '10px 20px' }}>
-                  <Save size={15} /> {saving ? 'Saving...' : editPlan ? 'Update' : 'Create'}
+                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary" style={{ padding: '10px 18px' }}>Cancel</button>
+                <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '10px 18px' }}>
+                  <Save size={14} /> {saving ? 'Saving...' : editPlan ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>
@@ -190,14 +178,14 @@ export default function AdminPlans() {
 
       {/* Delete confirm */}
       {deleteConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '360px', padding: '28px', textAlign: 'center' }}>
-            <div style={{ width: '50px', height: '50px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <AlertTriangle size={24} color="#dc2626" />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '340px', padding: '24px', textAlign: 'center' }}>
+            <div style={{ width: '48px', height: '48px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <AlertTriangle size={22} color="#dc2626" />
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Delete Plan?</h3>
-            <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '20px' }}>This cannot be undone.</p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>Delete Plan?</h3>
+            <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '18px' }}>This cannot be undone.</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => setDeleteConfirm(null)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '10px' }}>Cancel</button>
               <button onClick={() => handleDelete(deleteConfirm)} className="btn-danger" style={{ flex: 1, justifyContent: 'center', padding: '10px' }}>Delete</button>
             </div>

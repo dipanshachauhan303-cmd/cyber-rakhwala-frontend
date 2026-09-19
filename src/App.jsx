@@ -15,6 +15,8 @@ import AdminPlans from './pages/admin/Plans.jsx'
 import AdminProviders from './pages/admin/Providers.jsx'
 import AdminTools from './pages/admin/Tools.jsx'
 import AdminContent from './pages/admin/Content.jsx'
+import AdminApiKeys from './pages/admin/ApiKeys.jsx'
+import AdminRegistrations from './pages/admin/Registrations.jsx'
 import StudentDashboard from './pages/student/Dashboard.jsx'
 
 export default function App() {
@@ -87,9 +89,14 @@ export default function App() {
           <AdminContent />
         </ProtectedRoute>
       } />
+      <Route path="/admin/api-keys" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <AdminApiKeys />
+        </ProtectedRoute>
+      } />
       <Route path="/admin/registrations" element={
         <ProtectedRoute allowedRoles={['admin']}>
-          <AdminDashboard />
+          <AdminRegistrations />
         </ProtectedRoute>
       } />
 
@@ -100,6 +107,7 @@ export default function App() {
         </ProtectedRoute>
       } />
 
+      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

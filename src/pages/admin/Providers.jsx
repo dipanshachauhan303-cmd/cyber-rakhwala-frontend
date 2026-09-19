@@ -35,6 +35,8 @@ export default function AdminProviders() {
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [showKeys, setShowKeys] = useState({})
   const [testing, setTesting] = useState(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const stored = localStorage.getItem('cr_user')
@@ -42,19 +44,14 @@ export default function AdminProviders() {
     const parsed = JSON.parse(stored)
     if (parsed.role !== 'admin') { navigate('/login'); return }
     setUser(parsed)
+    const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
   }, [navigate])
 
-  const openCreate = () => {
-    setEditProvider(null)
-    setForm(EMPTY_FORM)
-    setShowModal(true)
-  }
-
-  const openEdit = (p) => {
-    setEditProvider(p)
-    setForm({ ...p, tools: p.tools.join(', ') })
-    setShowModal(true)
-  }
+  const openCreate = () => { setEditProvider(null); setForm(EMPTY_FORM); setShowModal(true) }
+  const openEdit = (p) => { setEditProvider(p); setForm({ ...p, tools: p.tools.join(', ') }); setShowModal(true) }
 
   const handleSave = (e) => {
     e.preventDefault()
@@ -71,48 +68,40 @@ export default function AdminProviders() {
     }, 700)
   }
 
-  const handleTest = (id) => {
-    setTesting(id)
-    setTimeout(() => setTesting(null), 1500)
-  }
-
-  const handleDelete = (id) => {
-    setProviders(providers.filter(p => p.id !== id))
-    setDeleteConfirm(null)
-  }
-
+  const handleTest = (id) => { setTesting(id); setTimeout(() => setTesting(null), 1500) }
+  const handleDelete = (id) => { setProviders(providers.filter(p => p.id !== id)); setDeleteConfirm(null) }
   const toggleKey = (id) => setShowKeys({ ...showKeys, [id]: !showKeys[id] })
-
-  const maskKey = (key) => key.slice(0, 8) + '••••••••••••' + key.slice(-4)
+  const maskKey = (key) => key.slice(0, 8) + '••••••••' + key.slice(-4)
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
-      <Sidebar role="admin" />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Topbar user={user} />
-        <main style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+      <Sidebar role="admin" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+        <Topbar user={user} onMenuClick={() => setMobileMenuOpen(true)} />
+
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
-              <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Providers</h1>
+              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Providers</h1>
               <p style={{ color: '#64748b', fontSize: '0.9rem' }}>External API connectors and data sources</p>
             </div>
-            <button onClick={openCreate} className="btn-primary" style={{ padding: '10px 20px' }}>
-              <Plus size={16} /> Add Provider
+            <button onClick={openCreate} className="btn-primary" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Plus size={16} /> {!isMobile && 'Add Provider'}
             </button>
           </div>
 
           {/* Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
             {[
-              { label: 'Total Providers', value: providers.length, color: '#0ea5e9', bg: '#e0f2fe' },
-              { label: 'Active', value: providers.filter(p => p.status === 'active').length, color: '#10b981', bg: '#d1fae5' },
-              { label: 'Errors', value: providers.filter(p => p.status === 'error').length, color: '#ef4444', bg: '#fee2e2' },
+              { label: 'Total', value: providers.length, color: '#0ea5e9' },
+              { label: 'Active', value: providers.filter(p => p.status === 'active').length, color: '#10b981' },
+              { label: 'Errors', value: providers.filter(p => p.status === 'error').length, color: '#ef4444' },
             ].map((s) => (
-              <div key={s.label} className="cr-card" style={{ padding: '18px' }}>
-                <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>{s.label}</p>
-                <p style={{ fontSize: '2rem', fontWeight: 700, color: s.color }}>{s.value}</p>
+              <div key={s.label} className="cr-card" style={{ padding: '14px' }}>
+                <p style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{s.label}</p>
+                <p style={{ fontSize: '1.75rem', fontWeight: 700, color: s.color }}>{s.value}</p>
               </div>
             ))}
           </div>
@@ -122,55 +111,52 @@ export default function AdminProviders() {
             {providers.map((p) => {
               const sc = STATUS_COLORS[p.status]
               return (
-                <div key={p.id} className="cr-card" style={{ padding: '18px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                <div key={p.id} className="cr-card" style={{ padding: isMobile ? '14px' : '18px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                        <div style={{ width: '36px', height: '36px', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Database size={18} color="#64748b" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                        <div style={{ width: '32px', height: '32px', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Database size={16} color="#64748b" />
                         </div>
                         <div>
-                          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>{p.name}</p>
-                          <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontFamily: 'JetBrains Mono, monospace' }}>{p.endpoint}</p>
+                          <p style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{p.name}</p>
+                          {!isMobile && <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>{p.endpoint}</p>}
                         </div>
                       </div>
 
                       {/* API Key */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f8fafc', borderRadius: '6px', padding: '8px 12px', marginBottom: '10px', maxWidth: '400px' }}>
-                        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', color: '#64748b', flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f8fafc', borderRadius: '6px', padding: '6px 10px', marginBottom: '8px', maxWidth: '340px' }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#64748b', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {showKeys[p.id] ? p.key : maskKey(p.key)}
                         </span>
-                        <button onClick={() => toggleKey(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+                        <button onClick={() => toggleKey(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', flexShrink: 0 }}>
                           {showKeys[p.id] ? <EyeOff size={13} /> : <Eye size={13} />}
                         </button>
                       </div>
 
-                      {/* Tools + stats */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         {p.tools.map(t => (
-                          <span key={t} style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px', borderRadius: '4px' }}>{t}</span>
+                          <span key={t} style={{ background: '#e0f2fe', color: '#0284c7', fontSize: '0.65rem', fontWeight: 600, padding: '2px 7px', borderRadius: '4px' }}>{t}</span>
                         ))}
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Latency: {p.latency}</span>
-                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Uptime: {p.uptime}</span>
+                        {!isMobile && (
+                          <>
+                            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Latency: {p.latency}</span>
+                            <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Uptime: {p.uptime}</span>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                      <span style={{ background: sc.bg, color: sc.color, fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '20px' }}>
-                        {sc.label}
-                      </span>
-                      <div style={{ display: 'flex', gap: '5px' }}>
-                        <button
-                          onClick={() => handleTest(p.id)}
-                          style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', color: '#64748b', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
-                        >
-                          <RefreshCw size={12} className={testing === p.id ? 'animate-spin' : ''} />
-                          {testing === p.id ? 'Testing...' : 'Test'}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
+                      <span style={{ background: sc.bg, color: sc.color, fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px' }}>{sc.label}</span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => handleTest(p.id)} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#64748b', fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <RefreshCw size={11} /> {testing === p.id ? '...' : 'Test'}
                         </button>
-                        <button onClick={() => openEdit(p)} style={{ background: '#e0f2fe', border: '1px solid #bae6fd', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#0284c7', display: 'flex', alignItems: 'center' }}>
+                        <button onClick={() => openEdit(p)} style={{ background: '#e0f2fe', border: '1px solid #bae6fd', borderRadius: '6px', padding: '5px 7px', cursor: 'pointer', color: '#0284c7', display: 'flex' }}>
                           <Edit2 size={13} />
                         </button>
-                        <button onClick={() => setDeleteConfirm(p.id)} style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center' }}>
+                        <button onClick={() => setDeleteConfirm(p.id)} style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 7px', cursor: 'pointer', color: '#dc2626', display: 'flex' }}>
                           <Trash2 size={13} />
                         </button>
                       </div>
@@ -185,10 +171,10 @@ export default function AdminProviders() {
 
       {/* Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '480px', padding: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>{editProvider ? 'Edit Provider' : 'Add Provider'}</h3>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '460px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>{editProvider ? 'Edit Provider' : 'Add Provider'}</h3>
               <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
             </div>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -217,9 +203,9 @@ export default function AdminProviders() {
                 <input type="text" value={form.tools} onChange={e => setForm({ ...form, tools: e.target.value })} placeholder="Phone Lookup, WhatsApp Trace" className="cr-input" />
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary" style={{ padding: '10px 20px' }}>Cancel</button>
-                <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '10px 20px' }}>
-                  <Save size={15} /> {saving ? 'Saving...' : editProvider ? 'Update' : 'Add Provider'}
+                <button type="button" onClick={() => setShowModal(false)} className="btn-secondary" style={{ padding: '10px 18px' }}>Cancel</button>
+                <button type="submit" disabled={saving} className="btn-primary" style={{ padding: '10px 18px' }}>
+                  <Save size={14} /> {saving ? 'Saving...' : editProvider ? 'Update' : 'Add'}
                 </button>
               </div>
             </form>
@@ -229,14 +215,14 @@ export default function AdminProviders() {
 
       {/* Delete confirm */}
       {deleteConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '360px', padding: '28px', textAlign: 'center' }}>
-            <div style={{ width: '50px', height: '50px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <AlertTriangle size={24} color="#dc2626" />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '340px', padding: '24px', textAlign: 'center' }}>
+            <div style={{ width: '48px', height: '48px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+              <AlertTriangle size={22} color="#dc2626" />
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Delete Provider?</h3>
-            <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '20px' }}>All tools using this provider will stop working.</p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>Delete Provider?</h3>
+            <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '18px' }}>All tools using this provider will stop working.</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => setDeleteConfirm(null)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '10px' }}>Cancel</button>
               <button onClick={() => handleDelete(deleteConfirm)} className="btn-danger" style={{ flex: 1, justifyContent: 'center', padding: '10px' }}>Delete</button>
             </div>
