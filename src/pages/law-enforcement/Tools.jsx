@@ -13,18 +13,6 @@ import {
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 
-const ICON_MAP = {
-  Phone, Users, Activity, Car, CreditCard, Shield,
-  Search, Globe, Mail, Hash, Image, Link, MapPin,
-  Database, Wifi, MessageCircle, Zap, Radio, BarChart2,
-  FileText, Building, Download, Building2: Building,
-  User: Users, Settings: Search, ClipboardList: FileText,
-  Smartphone: Phone, ArrowLeftRight: ArrowUpRight,
-  Monitor: Database, Server: Database, Unlock: Shield,
-  AlertTriangle: Shield, CheckCircle: Shield,
-  Brain: Search, BarChart2, Activity,
-}
-
 const CATEGORIES = [
   'All', 'OSINT', 'Telecom', 'Financial', 'Identity',
   'Forensics', 'Network', 'Biometric', 'Records',
@@ -179,7 +167,6 @@ export default function LETools() {
       const margin = 15
       let y = 0
 
-      // Header
       doc.setFillColor(15, 23, 42)
       doc.rect(0, 0, W, 42, 'F')
       doc.setTextColor(255, 255, 255)
@@ -195,7 +182,6 @@ export default function LETools() {
       doc.text(`Officer: ${user.name || 'N/A'}`, W - margin - 55, 30)
       y = 50
 
-      // Warning banner
       doc.setFillColor(254, 243, 199)
       doc.rect(margin, y, W - margin * 2, 9, 'F')
       doc.setTextColor(146, 64, 14)
@@ -204,14 +190,10 @@ export default function LETools() {
       doc.text('FOR LAWFUL INTELLIGENCE AND INVESTIGATIVE PURPOSES ONLY — LAW ENFORCEMENT USE', margin + 3, y + 6)
       y += 14
 
-      // Sections
       reportTool.template.sections.forEach((section) => {
         const hasData = section.fields.some(f => reportData[f.key])
         if (!hasData) return
-
         if (y > 255) { doc.addPage(); y = 15 }
-
-        // Section header
         doc.setFillColor(239, 246, 255)
         doc.rect(margin, y, W - margin * 2, 8, 'F')
         doc.setDrawColor(219, 234, 254)
@@ -221,12 +203,10 @@ export default function LETools() {
         doc.setFont('helvetica', 'bold')
         doc.text(section.label.toUpperCase(), margin + 3, y + 5.5)
         y += 12
-
         section.fields.forEach((field) => {
           const val = reportData[field.key]
           if (!val) return
           if (y > 270) { doc.addPage(); y = 15 }
-
           doc.setFontSize(8)
           doc.setFont('helvetica', 'bold')
           doc.setTextColor(100, 116, 139)
@@ -240,7 +220,6 @@ export default function LETools() {
         y += 4
       })
 
-      // Footer on all pages
       const pageCount = doc.getNumberOfPages()
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i)
@@ -277,72 +256,95 @@ export default function LETools() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <Topbar user={{ ...user, credits: 250 }} onMenuClick={() => setMobileMenuOpen(true)} />
 
-        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '24px' }}>
 
-          <div style={{ marginBottom: '20px' }}>
-            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>Investigation Tools</h1>
-            <p style={{ color: '#64748b', fontSize: '0.9rem' }}>{TOOLS.length} tools available</p>
+          <div style={{ marginBottom: '16px' }}>
+            <h1 style={{ fontSize: isMobile ? '1.1rem' : '1.5rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>Investigation Tools</h1>
+            <p style={{ color: '#64748b', fontSize: '0.82rem' }}>{TOOLS.length} tools available</p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
-            <div style={{ position: 'relative', flex: 1, minWidth: '180px' }}>
-              <Search size={14} color="#93c5fd" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
-              <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tools..." className="cr-input" style={{ paddingLeft: '36px' }} />
+          {/* Search + Credits */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={13} color="#93c5fd" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tools..." className="cr-input" style={{ paddingLeft: '32px', fontSize: '0.82rem' }} />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.8)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', padding: '8px 12px', flexShrink: 0, backdropFilter: 'blur(8px)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', padding: '8px 10px', flexShrink: 0, backdropFilter: 'blur(8px)' }}>
               <Zap size={13} color="#d97706" />
               <span style={{ fontWeight: 700, color: '#d97706', fontSize: '0.85rem' }}>250</span>
-              {!isMobile && <span style={{ color: '#92400e', fontSize: '0.78rem' }}>credits</span>}
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          {/* Category filters - horizontal scroll on mobile */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
             {CATEGORIES.map((cat) => (
               <button key={cat} onClick={() => setCategory(cat)} style={{
-                padding: '5px 12px', borderRadius: '6px', border: '1px solid',
+                padding: '5px 11px', borderRadius: '6px', border: '1px solid',
                 borderColor: category === cat ? '#2563eb' : 'rgba(59,130,246,0.15)',
                 background: category === cat ? 'linear-gradient(135deg, #2563eb, #0ea5e9)' : 'rgba(255,255,255,0.7)',
                 color: category === cat ? '#ffffff' : '#64748b',
-                fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+                fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer',
+                whiteSpace: 'nowrap', flexShrink: 0,
                 boxShadow: category === cat ? '0 2px 8px rgba(37,99,235,0.3)' : 'none',
                 backdropFilter: 'blur(6px)',
               }}>{cat}</button>
             ))}
           </div>
 
-          <p style={{ fontSize: '0.78rem', color: '#93c5fd', marginBottom: '12px' }}>Showing {filtered.length} of {TOOLS.length} tools</p>
+          <p style={{ fontSize: '0.75rem', color: '#93c5fd', marginBottom: '10px' }}>
+            {filtered.length} of {TOOLS.length} tools
+          </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px' }}>
+          {/* Tools Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '10px' }}>
             {filtered.map((tool) => {
               const Icon = tool.icon
               return (
-                <div key={tool.id} className="cr-card" style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div key={tool.id} className="cr-card" style={{ padding: isMobile ? '10px' : '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+                  {/* Icon + Credits */}
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                    <div style={{ width: '36px', height: '36px', background: `linear-gradient(135deg, ${tool.color}20, ${tool.color}35)`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${tool.color}25` }}>
-                      <Icon size={18} color={tool.color} />
+                    <div style={{ width: isMobile ? '30px' : '36px', height: isMobile ? '30px' : '36px', background: `linear-gradient(135deg, ${tool.color}20, ${tool.color}35)`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${tool.color}25`, flexShrink: 0 }}>
+                      <Icon size={isMobile ? 14 : 18} color={tool.color} />
                     </div>
-                    <span style={{ background: '#fef3c7', color: '#d97706', fontSize: '0.68rem', fontWeight: 700, padding: '2px 6px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                      <Zap size={9} /> {tool.credits}
+                    <span style={{ background: '#fef3c7', color: '#d97706', fontSize: '0.62rem', fontWeight: 700, padding: '2px 5px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <Zap size={8} />{tool.credits}
                     </span>
                   </div>
+
+                  {/* Name + Desc */}
                   <div>
-                    <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '2px' }}>{tool.label}</p>
-                    {!isMobile && <p style={{ fontSize: '0.72rem', color: '#64748b' }}>{tool.desc}</p>}
+                    <p style={{ fontSize: isMobile ? '0.75rem' : '0.82rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '1px', lineHeight: 1.3 }}>{tool.label}</p>
+                    {!isMobile && <p style={{ fontSize: '0.7rem', color: '#64748b', lineHeight: 1.4 }}>{tool.desc}</p>}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ background: 'rgba(219,234,254,0.6)', color: '#2563eb', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>{tool.category}</span>
-                    <div style={{ display: 'flex', gap: '5px' }}>
-                      <button onClick={() => openReport(tool)} style={{
-                        padding: '4px 8px', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer',
-                        border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px',
-                        background: 'rgba(219,234,254,0.6)', color: '#1d4ed8',
-                        display: 'flex', alignItems: 'center', gap: '3px',
-                        backdropFilter: 'blur(6px)',
-                      }}>
-                        <FileText size={11} /> {!isMobile && 'Report'}
+
+                  {/* Category + Buttons */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: 'auto' }}>
+                    <span style={{ background: 'rgba(219,234,254,0.6)', color: '#2563eb', fontSize: '0.58rem', fontWeight: 600, padding: '2px 5px', borderRadius: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: isMobile ? '50px' : '80px' }}>
+                      {tool.category}
+                    </span>
+                    <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                      <button
+                        onClick={() => openReport(tool)}
+                        title="Report"
+                        style={{
+                          padding: isMobile ? '4px 6px' : '4px 8px',
+                          fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
+                          border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px',
+                          background: 'rgba(219,234,254,0.6)', color: '#1d4ed8',
+                          display: 'flex', alignItems: 'center', gap: '2px',
+                        }}
+                      >
+                        <FileText size={10} />
+                        {!isMobile && <span>Report</span>}
                       </button>
-                      <button onClick={() => { setActiveTool(tool); setToolInput(''); setResult(null) }} className="btn-primary" style={{ padding: '4px 10px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        Launch <ArrowUpRight size={11} />
+                      <button
+                        onClick={() => { setActiveTool(tool); setToolInput(''); setResult(null) }}
+                        title="Launch"
+                        className="btn-primary"
+                        style={{ padding: isMobile ? '4px 6px' : '4px 10px', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: '2px' }}
+                      >
+                        {isMobile ? <ArrowUpRight size={11} /> : <><span>Launch</span><ArrowUpRight size={10} /></>}
                       </button>
                     </div>
                   </div>
@@ -355,45 +357,45 @@ export default function LETools() {
 
       {/* Launch Modal */}
       {activeTool && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '16px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '24px', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '42px', height: '42px', background: `linear-gradient(135deg, ${activeTool.color}20, ${activeTool.color}35)`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${activeTool.color}25` }}>
-                  <activeTool.icon size={20} color={activeTool.color} />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', zIndex: 200, padding: isMobile ? '0' : '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderRadius: isMobile ? '16px 16px 0 0' : '16px', width: '100%', maxWidth: isMobile ? '100%' : '480px', padding: '20px', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '38px', height: '38px', background: `linear-gradient(135deg, ${activeTool.color}20, ${activeTool.color}35)`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${activeTool.color}25` }}>
+                  <activeTool.icon size={18} color={activeTool.color} />
                 </div>
                 <div>
-                  <p style={{ fontSize: '1rem', fontWeight: 700, color: '#1e3a8a' }}>{activeTool.label}</p>
-                  <p style={{ fontSize: '0.78rem', color: '#64748b' }}>{activeTool.desc}</p>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e3a8a' }}>{activeTool.label}</p>
+                  <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{activeTool.desc}</p>
                 </div>
               </div>
-              <button onClick={() => { setActiveTool(null); setResult(null); setToolInput('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd' }}>
+              <button onClick={() => { setActiveTool(null); setResult(null); setToolInput('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', padding: '4px' }}>
                 <X size={20} />
               </button>
             </div>
             <form onSubmit={handleRun} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Query Input</label>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Query Input</label>
                 <input type="text" value={toolInput} onChange={e => setToolInput(e.target.value)} placeholder={`Enter ${activeTool.label} query...`} className="cr-input" autoFocus />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.82rem', color: '#93c5fd', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: '#93c5fd', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Zap size={13} color="#d97706" /> {activeTool.credits} credits
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button type="button" onClick={() => { setActiveTool(null); setResult(null) }} className="btn-secondary" style={{ padding: '8px 16px' }}>Cancel</button>
-                  <button type="submit" disabled={running || !toolInput.trim()} className="btn-primary" style={{ padding: '8px 20px' }}>
+                  <button type="button" onClick={() => { setActiveTool(null); setResult(null) }} className="btn-secondary" style={{ padding: '8px 14px' }}>Cancel</button>
+                  <button type="submit" disabled={running || !toolInput.trim()} className="btn-primary" style={{ padding: '8px 18px' }}>
                     {running ? 'Running...' : 'Run Tool'}
                   </button>
                 </div>
               </div>
             </form>
             {result && (
-              <div style={{ marginTop: '16px', padding: '14px', background: 'rgba(219,234,254,0.5)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px' }}>
-                <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px' }}>Query processed — {activeTool.label}</p>
-                <p style={{ fontSize: '0.8rem', color: '#2563eb', marginBottom: '4px' }}>Query: {toolInput}</p>
-                <p style={{ fontSize: '0.78rem', color: '#64748b' }}>{result.message}</p>
-                <p style={{ fontSize: '0.72rem', color: '#93c5fd', marginTop: '6px' }}>{result.timestamp}</p>
+              <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(219,234,254,0.5)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px' }}>
+                <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '5px' }}>Query processed — {activeTool.label}</p>
+                <p style={{ fontSize: '0.78rem', color: '#2563eb', marginBottom: '3px' }}>Query: {toolInput}</p>
+                <p style={{ fontSize: '0.75rem', color: '#64748b' }}>{result.message}</p>
+                <p style={{ fontSize: '0.7rem', color: '#93c5fd', marginTop: '5px' }}>{result.timestamp}</p>
               </div>
             )}
           </div>
@@ -402,45 +404,57 @@ export default function LETools() {
 
       {/* Report Modal */}
       {reportTool && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '16px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderRadius: '16px', width: '100%', maxWidth: '600px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', zIndex: 200, padding: isMobile ? '0' : '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderRadius: isMobile ? '16px 16px 0 0' : '16px', width: '100%', maxWidth: isMobile ? '100%' : '600px', height: isMobile ? '92vh' : 'auto', maxHeight: isMobile ? '92vh' : '90vh', display: 'flex', flexDirection: 'column', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
 
-            {/* Report Header */}
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '42px', height: '42px', background: `linear-gradient(135deg, ${reportTool.color}20, ${reportTool.color}35)`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${reportTool.color}25` }}>
-                  <reportTool.icon size={20} color={reportTool.color} />
+            {/* Header */}
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '38px', height: '38px', background: `linear-gradient(135deg, ${reportTool.color}20, ${reportTool.color}35)`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${reportTool.color}25`, flexShrink: 0 }}>
+                  <reportTool.icon size={18} color={reportTool.color} />
                 </div>
                 <div>
-                  <p style={{ fontSize: '1rem', fontWeight: 700, color: '#1e3a8a' }}>{reportTool.template.title}</p>
-                  <p style={{ fontSize: '0.78rem', color: '#64748b' }}>Fill details and download PDF report</p>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e3a8a' }}>{reportTool.template.title}</p>
+                  <p style={{ fontSize: '0.72rem', color: '#64748b' }}>Fill details and download PDF</p>
                 </div>
               </div>
-              <button onClick={() => setReportTool(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd' }}>
+              <button onClick={() => setReportTool(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', padding: '4px' }}>
                 <X size={20} />
               </button>
             </div>
 
-            {/* Report Body */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
+            {/* Body - scrollable */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px' }}>
               {reportTool.template.sections.map((section, si) => (
-                <div key={si} style={{ marginBottom: '12px', border: '1px solid rgba(59,130,246,0.12)', borderRadius: '10px', overflow: 'hidden', background: 'rgba(255,255,255,0.8)' }}>
-                  <button onClick={() => toggleSection(si)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'rgba(219,234,254,0.3)', border: 'none', cursor: 'pointer', borderBottom: expandedSections[si] ? '1px solid rgba(59,130,246,0.1)' : 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FileText size={14} color="#2563eb" />
-                      <span style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e3a8a' }}>{section.label}</span>
+                <div key={si} style={{ marginBottom: '10px', border: '1px solid rgba(59,130,246,0.12)', borderRadius: '10px', overflow: 'hidden' }}>
+                  <button onClick={() => toggleSection(si)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(219,234,254,0.3)', border: 'none', cursor: 'pointer', borderBottom: expandedSections[si] ? '1px solid rgba(59,130,246,0.1)' : 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                      <FileText size={13} color="#2563eb" />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e3a8a' }}>{section.label}</span>
                     </div>
-                    {expandedSections[si] ? <ChevronUp size={15} color="#93c5fd" /> : <ChevronDown size={15} color="#93c5fd" />}
+                    {expandedSections[si] ? <ChevronUp size={14} color="#93c5fd" /> : <ChevronDown size={14} color="#93c5fd" />}
                   </button>
                   {expandedSections[si] && (
-                    <div style={{ padding: '14px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
+                    <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px', background: 'rgba(255,255,255,0.8)' }}>
                       {section.fields.map((field) => (
                         <div key={field.key} style={{ gridColumn: field.multiline ? '1 / -1' : 'auto' }}>
                           <label style={labelStyle}>{field.label}</label>
                           {field.multiline ? (
-                            <textarea value={reportData[field.key] || ''} onChange={e => updateField(field.key, e.target.value)} rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder={`Enter ${field.label.toLowerCase()}...`} />
+                            <textarea
+                              value={reportData[field.key] || ''}
+                              onChange={e => updateField(field.key, e.target.value)}
+                              rows={3}
+                              style={{ ...inputStyle, resize: 'vertical' }}
+                              placeholder={`Enter ${field.label.toLowerCase()}...`}
+                            />
                           ) : (
-                            <input type="text" value={reportData[field.key] || ''} onChange={e => updateField(field.key, e.target.value)} style={inputStyle} placeholder={`Enter ${field.label.toLowerCase()}...`} />
+                            <input
+                              type="text"
+                              value={reportData[field.key] || ''}
+                              onChange={e => updateField(field.key, e.target.value)}
+                              style={inputStyle}
+                              placeholder={`Enter ${field.label.toLowerCase()}...`}
+                            />
                           )}
                         </div>
                       ))}
@@ -450,12 +464,12 @@ export default function LETools() {
               ))}
             </div>
 
-            {/* Report Footer */}
-            <div style={{ padding: '16px 24px', borderTop: '1px solid rgba(59,130,246,0.1)', display: 'flex', gap: '10px', justifyContent: 'flex-end', flexShrink: 0 }}>
-              <button onClick={() => setReportTool(null)} className="btn-secondary" style={{ padding: '10px 18px' }}>Cancel</button>
-              <button onClick={generatePDF} disabled={generating} className="btn-primary" style={{ padding: '10px 22px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Download size={15} />
-                {generating ? 'Generating...' : 'Download PDF Report'}
+            {/* Footer */}
+            <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(59,130,246,0.1)', display: 'flex', gap: '10px', justifyContent: 'flex-end', flexShrink: 0, background: 'rgba(255,255,255,0.95)' }}>
+              <button onClick={() => setReportTool(null)} className="btn-secondary" style={{ padding: '10px 16px' }}>Cancel</button>
+              <button onClick={generatePDF} disabled={generating} className="btn-primary" style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <Download size={14} />
+                {generating ? 'Generating...' : 'Download PDF'}
               </button>
             </div>
           </div>
