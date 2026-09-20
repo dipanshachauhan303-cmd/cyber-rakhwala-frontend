@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
+import AnimatedBg from '../../components/shared/AnimatedBg.jsx'
 import {
   Search, Zap, Phone, Globe, Mail, Hash, Image,
   Link, MapPin, Database, Wifi, MessageCircle,
@@ -42,7 +43,7 @@ const TOOLS = [
   { id: 'upi-validate', icon: CreditCard, label: 'UPI Validate', credits: 15, category: 'Financial' },
 ]
 
-const CATEGORIES = ['All', 'OSINT', 'Network', 'Forensics', 'Financial', 'Identity', 'Records', 'Business', 'Communication', 'Geospatial']
+const CATEGORIES = ['All', 'Network', 'OSINT', 'Forensics', 'Financial', 'Identity', 'Records', 'Business', 'Communication', 'Geospatial']
 
 export default function StudentDashboard() {
   const navigate = useNavigate()
@@ -77,46 +78,44 @@ export default function StudentDashboard() {
     if (!toolInput.trim()) return
     setRunning(true)
     setTimeout(() => {
-      setResult({
-        message: 'Tool integration requires backend API. Demo mode active.',
-        timestamp: new Date().toLocaleTimeString(),
-      })
+      setResult({ message: 'Tool integration requires backend API. Demo mode active.', timestamp: new Date().toLocaleTimeString() })
       setRunning(false)
     }, 1500)
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
+      <AnimatedBg pattern="constellation" />
       <Sidebar role="student" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <Topbar user={{ ...user, credits: 100 }} onMenuClick={() => setMobileMenuOpen(true)} />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
           <div style={{ marginBottom: '20px' }}>
-            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Student Dashboard</h1>
+            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>Student Dashboard</h1>
             <p style={{ color: '#64748b', fontSize: '0.875rem' }}>OSINT Learning Platform — Field Access (1.5x credit cost)</p>
           </div>
 
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
             {[
-              { label: isMobile ? 'Tools' : 'Tools Available', value: TOOLS.length, icon: BookOpen, color: '#0ea5e9', bg: '#e0f2fe' },
-              { label: isMobile ? 'Credits' : 'Credits Left', value: '100', icon: Zap, color: '#d97706', bg: '#fef3c7' },
-              { label: isMobile ? 'Scans' : 'Scans Done', value: '0', icon: Search, color: '#10b981', bg: '#d1fae5' },
-              { label: isMobile ? 'Awards' : 'Achievements', value: '0', icon: Award, color: '#8b5cf6', bg: '#ede9fe' },
+              { label: isMobile ? 'Tools' : 'Tools Available', value: TOOLS.length, icon: BookOpen, grad: ['#2563eb', '#0ea5e9'] },
+              { label: isMobile ? 'Credits' : 'Credits Left', value: '100', icon: Zap, grad: ['#f59e0b', '#f97316'] },
+              { label: isMobile ? 'Scans' : 'Scans Done', value: '0', icon: Search, grad: ['#10b981', '#06b6d4'] },
+              { label: isMobile ? 'Awards' : 'Achievements', value: '0', icon: Award, grad: ['#8b5cf6', '#ec4899'] },
             ].map((stat) => {
               const Icon = stat.icon
               return (
                 <div key={stat.label} className="cr-card" style={{ padding: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <p style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{stat.label}</p>
-                    <div style={{ width: '28px', height: '28px', background: stat.bg, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <Icon size={14} color={stat.color} />
+                    <p style={{ fontSize: '0.65rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{stat.label}</p>
+                    <div style={{ width: '28px', height: '28px', background: `linear-gradient(135deg, ${stat.grad[0]}, ${stat.grad[1]})`, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 8px ${stat.grad[0]}40` }}>
+                      <Icon size={14} color="#ffffff" />
                     </div>
                   </div>
-                  <p style={{ fontSize: '1.75rem', fontWeight: 700, color: '#0f172a', lineHeight: 1 }}>{stat.value}</p>
+                  <p style={{ fontSize: '1.75rem', fontWeight: 800, background: `linear-gradient(135deg, ${stat.grad[0]}, ${stat.grad[1]})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontFamily: 'JetBrains Mono, monospace', lineHeight: 1 }}>{stat.value}</p>
                 </div>
               )
             })}
@@ -124,7 +123,7 @@ export default function StudentDashboard() {
 
           {/* Search */}
           <div style={{ position: 'relative', marginBottom: '14px' }}>
-            <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+            <Search size={14} color="#93c5fd" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tools..." className="cr-input" style={{ paddingLeft: '36px' }} />
           </div>
 
@@ -134,10 +133,12 @@ export default function StudentDashboard() {
               <button key={cat} onClick={() => setCategory(cat)} style={{
                 padding: '5px 12px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600,
                 border: '1px solid',
-                borderColor: category === cat ? '#0ea5e9' : '#e2e8f0',
-                background: category === cat ? '#e0f2fe' : '#ffffff',
-                color: category === cat ? '#0284c7' : '#64748b',
+                borderColor: category === cat ? '#2563eb' : 'rgba(59,130,246,0.15)',
+                background: category === cat ? 'linear-gradient(135deg, #2563eb, #0ea5e9)' : 'rgba(255,255,255,0.7)',
+                color: category === cat ? '#ffffff' : '#64748b',
                 cursor: 'pointer', whiteSpace: 'nowrap',
+                backdropFilter: 'blur(6px)',
+                boxShadow: category === cat ? '0 2px 8px rgba(37,99,235,0.3)' : 'none',
               }}>{cat}</button>
             ))}
           </div>
@@ -149,17 +150,17 @@ export default function StudentDashboard() {
               return (
                 <div key={tool.id} className="cr-card" style={{ padding: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <div style={{ width: '34px', height: '34px', background: '#f1f5f9', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon size={16} color="#0ea5e9" />
+                    <div style={{ width: '34px', height: '34px', background: 'linear-gradient(135deg, rgba(37,99,235,0.12), rgba(14,165,233,0.2))', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(59,130,246,0.15)' }}>
+                      <Icon size={16} color="#2563eb" />
                     </div>
                     <span style={{ background: '#fef3c7', color: '#d97706', fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '2px' }}>
                       <Zap size={9} />{Math.ceil(tool.credits * 1.5)}
                     </span>
                   </div>
-                  <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>{tool.label}</p>
+                  <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '2px' }}>{tool.label}</p>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-                    <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>{tool.category}</span>
-                    <button onClick={() => { setActiveTool(tool); setResult(null); setToolInput('') }} style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span style={{ background: 'rgba(219,234,254,0.6)', color: '#1d4ed8', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>{tool.category}</span>
+                    <button onClick={() => { setActiveTool(tool); setResult(null); setToolInput('') }} className="btn-primary" style={{ padding: '4px 10px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
                       Run <ArrowUpRight size={11} />
                     </button>
                   </div>
@@ -171,28 +172,29 @@ export default function StudentDashboard() {
       </div>
 
       {activeTool && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '460px', padding: '24px' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: '16px', width: '100%', maxWidth: '460px', padding: '24px', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '38px', height: '38px', background: '#e0f2fe', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <activeTool.icon size={18} color="#0ea5e9" />
+                <div style={{ width: '38px', height: '38px', background: 'linear-gradient(135deg, rgba(37,99,235,0.12), rgba(14,165,233,0.2))', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(59,130,246,0.15)' }}>
+                  <activeTool.icon size={18} color="#2563eb" />
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>{activeTool.label}</p>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e3a8a' }}>{activeTool.label}</p>
+                  <p style={{ fontSize: '0.72rem', color: '#93c5fd' }}>{activeTool.category}</p>
                 </div>
               </div>
-              <button onClick={() => { setActiveTool(null); setResult(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
+              <button onClick={() => { setActiveTool(null); setResult(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd' }}>
                 <X size={18} />
               </button>
             </div>
             <form onSubmit={handleRun} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Input</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Input</label>
                 <input type="text" value={toolInput} onChange={e => setToolInput(e.target.value)} placeholder={`Enter query for ${activeTool.label}...`} className="cr-input" autoFocus />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '0.78rem', color: '#93c5fd', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Zap size={12} color="#d97706" /> {activeTool.credits} × 1.5 = {Math.ceil(activeTool.credits * 1.5)} credits
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -204,10 +206,10 @@ export default function StudentDashboard() {
               </div>
             </form>
             {result && (
-              <div style={{ marginTop: '14px', padding: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
-                <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#166534', marginBottom: '3px' }}>✓ Query processed</p>
-                <p style={{ fontSize: '0.78rem', color: '#15803d' }}>{result.message}</p>
-                <p style={{ fontSize: '0.72rem', color: '#86efac', marginTop: '3px' }}>{result.timestamp}</p>
+              <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(219,234,254,0.4)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px' }}>
+                <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '3px' }}>✓ Query processed</p>
+                <p style={{ fontSize: '0.78rem', color: '#2563eb' }}>{result.message}</p>
+                <p style={{ fontSize: '0.72rem', color: '#93c5fd', marginTop: '3px' }}>{result.timestamp}</p>
               </div>
             )}
           </div>
