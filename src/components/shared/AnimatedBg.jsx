@@ -41,7 +41,6 @@ export default function AnimatedBg({ pattern = 'network' }) {
       })
     }
 
-    // NETWORK
     if (pattern === 'network') {
       const pts = Array.from({ length: 70 }, () => ({
         x: Math.random() * canvas.width,
@@ -50,7 +49,6 @@ export default function AnimatedBg({ pattern = 'network' }) {
         vy: (Math.random() - 0.5) * 0.4,
         r: Math.random() * 1.5 + 0.8,
       }))
-
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         drawGradientBg()
@@ -76,32 +74,26 @@ export default function AnimatedBg({ pattern = 'network' }) {
           const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3)
           g.addColorStop(0, `${blue}0.8)`)
           g.addColorStop(1, `${blue}0)`)
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2)
-          ctx.fillStyle = g
-          ctx.fill()
-          ctx.beginPath()
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-          ctx.fillStyle = `${blue}0.9)`
-          ctx.fill()
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2)
+          ctx.fillStyle = g; ctx.fill()
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+          ctx.fillStyle = `${blue}0.9)`; ctx.fill()
         }
         animId = requestAnimationFrame(animate)
       }
       animate()
     }
 
-    // HEX
     if (pattern === 'hex') {
       let t = 0
       const size = 32
       const ww = size * 2
       const hh = Math.sqrt(3) * size
       const hexes = []
-      for (let row = -1; row < canvas.height / hh + 2; row++) {
-        for (let col = -1; col < canvas.width / ww + 2; col++) {
+      for (let row = -1; row < canvas.height / hh + 2; row++)
+        for (let col = -1; col < canvas.width / ww + 2; col++)
           hexes.push({ x: col * ww * 0.75, y: row * hh + (col % 2 === 0 ? 0 : hh / 2), phase: Math.random() * Math.PI * 2 })
-        }
-      }
+
       const drawHex = (x, y, s, alpha) => {
         ctx.beginPath()
         for (let i = 0; i < 6; i++) {
@@ -109,9 +101,7 @@ export default function AnimatedBg({ pattern = 'network' }) {
           i === 0 ? ctx.moveTo(x + s * Math.cos(a), y + s * Math.sin(a)) : ctx.lineTo(x + s * Math.cos(a), y + s * Math.sin(a))
         }
         ctx.closePath()
-        ctx.strokeStyle = `${blue}${alpha})`
-        ctx.lineWidth = 0.8
-        ctx.stroke()
+        ctx.strokeStyle = `${blue}${alpha})`; ctx.lineWidth = 0.8; ctx.stroke()
       }
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -120,17 +110,13 @@ export default function AnimatedBg({ pattern = 'network' }) {
         hexes.forEach(h => {
           const pulse = (Math.sin(t + h.phase) + 1) / 2
           drawHex(h.x, h.y, size - 2, 0.06 + pulse * 0.16)
-          if (pulse > 0.8) {
-            ctx.fillStyle = `${blue}${pulse * 0.07})`
-            ctx.fill()
-          }
+          if (pulse > 0.8) { ctx.fillStyle = `${blue}${pulse * 0.07})`; ctx.fill() }
         })
         animId = requestAnimationFrame(animate)
       }
       animate()
     }
 
-    // CIRCUIT
     if (pattern === 'circuit') {
       const nodes = Array.from({ length: 25 }, () => ({
         x: Math.round(Math.random() * (canvas.width / 40)) * 40,
@@ -150,59 +136,35 @@ export default function AnimatedBg({ pattern = 'network' }) {
           n.connections.forEach(m => {
             const progress = (Math.sin(t + n.pulse) + 1) / 2
             const midX = (n.x + m.x) / 2
-            ctx.beginPath()
-            ctx.moveTo(n.x, n.y)
-            ctx.lineTo(midX, n.y)
-            ctx.lineTo(midX, m.y)
-            ctx.lineTo(m.x, m.y)
-            ctx.strokeStyle = `${blue}0.18)`
-            ctx.lineWidth = 0.8
-            ctx.stroke()
-            const pathLen = Math.abs(m.x - n.x) + Math.abs(m.y - n.y)
-            const dotPos = progress * pathLen
-            const seg1 = Math.abs(midX - n.x)
-            const seg2 = Math.abs(m.y - n.y)
+            ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(midX, n.y)
+            ctx.lineTo(midX, m.y); ctx.lineTo(m.x, m.y)
+            ctx.strokeStyle = `${blue}0.18)`; ctx.lineWidth = 0.8; ctx.stroke()
+            const seg1 = Math.abs(midX - n.x), seg2 = Math.abs(m.y - n.y)
+            const dotPos = progress * (Math.abs(m.x - n.x) + Math.abs(m.y - n.y))
             let dotX, dotY
             if (dotPos < seg1) { dotX = n.x + (midX - n.x) * (dotPos / seg1); dotY = n.y }
             else if (dotPos < seg1 + seg2) { dotX = midX; dotY = n.y + (m.y - n.y) * ((dotPos - seg1) / seg2) }
             else { dotX = midX + (m.x - midX) * ((dotPos - seg1 - seg2) / (Math.abs(m.x - midX) || 1)); dotY = m.y }
             const dg = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 6)
-            dg.addColorStop(0, `${cyan}0.9)`)
-            dg.addColorStop(1, `${cyan}0)`)
-            ctx.beginPath()
-            ctx.arc(dotX, dotY, 6, 0, Math.PI * 2)
-            ctx.fillStyle = dg
-            ctx.fill()
-            ctx.beginPath()
-            ctx.arc(dotX, dotY, 2, 0, Math.PI * 2)
-            ctx.fillStyle = '#7dd3fc'
-            ctx.fill()
+            dg.addColorStop(0, `${cyan}0.9)`); dg.addColorStop(1, `${cyan}0)`)
+            ctx.beginPath(); ctx.arc(dotX, dotY, 6, 0, Math.PI * 2); ctx.fillStyle = dg; ctx.fill()
+            ctx.beginPath(); ctx.arc(dotX, dotY, 2, 0, Math.PI * 2); ctx.fillStyle = '#7dd3fc'; ctx.fill()
           })
           const pulse = (Math.sin(t + n.pulse) + 1) / 2
           const ng = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 8)
-          ng.addColorStop(0, `${blue}${0.6 + pulse * 0.4})`)
-          ng.addColorStop(1, `${blue}0)`)
-          ctx.beginPath()
-          ctx.arc(n.x, n.y, 8, 0, Math.PI * 2)
-          ctx.fillStyle = ng
-          ctx.fill()
-          ctx.beginPath()
-          ctx.arc(n.x, n.y, 3, 0, Math.PI * 2)
-          ctx.fillStyle = '#93c5fd'
-          ctx.fill()
+          ng.addColorStop(0, `${blue}${0.6 + pulse * 0.4})`); ng.addColorStop(1, `${blue}0)`)
+          ctx.beginPath(); ctx.arc(n.x, n.y, 8, 0, Math.PI * 2); ctx.fillStyle = ng; ctx.fill()
+          ctx.beginPath(); ctx.arc(n.x, n.y, 3, 0, Math.PI * 2); ctx.fillStyle = '#93c5fd'; ctx.fill()
         })
         animId = requestAnimationFrame(animate)
       }
       animate()
     }
 
-    // CONSTELLATION
     if (pattern === 'constellation') {
       const stars = Array.from({ length: 80 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.5 + 0.5,
-        phase: Math.random() * Math.PI * 2,
+        x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+        r: Math.random() * 1.5 + 0.5, phase: Math.random() * Math.PI * 2,
         twinkle: Math.random() * 0.5 + 0.5,
       }))
       const lines = []
@@ -215,33 +177,22 @@ export default function AnimatedBg({ pattern = 'network' }) {
         drawGradientBg()
         t += 0.015
         lines.forEach(([a, b]) => {
-          ctx.beginPath()
-          ctx.moveTo(a.x, a.y)
-          ctx.lineTo(b.x, b.y)
-          ctx.strokeStyle = `${blue}${0.1 + 0.06 * Math.sin(t)})`
-          ctx.lineWidth = 0.6
-          ctx.stroke()
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y)
+          ctx.strokeStyle = `${blue}${0.1 + 0.06 * Math.sin(t)})`; ctx.lineWidth = 0.6; ctx.stroke()
         })
         stars.forEach(s => {
           const twinkle = s.twinkle * (0.7 + 0.3 * Math.sin(t + s.phase))
           const sg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4)
-          sg.addColorStop(0, `${cyan}${twinkle * 0.9})`)
-          sg.addColorStop(1, `${cyan}0)`)
-          ctx.beginPath()
-          ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI * 2)
-          ctx.fillStyle = sg
-          ctx.fill()
-          ctx.beginPath()
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
-          ctx.fillStyle = `rgba(147,197,253,${twinkle})`
-          ctx.fill()
+          sg.addColorStop(0, `${cyan}${twinkle * 0.9})`); sg.addColorStop(1, `${cyan}0)`)
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 4, 0, Math.PI * 2); ctx.fillStyle = sg; ctx.fill()
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+          ctx.fillStyle = `rgba(147,197,253,${twinkle})`; ctx.fill()
         })
         animId = requestAnimationFrame(animate)
       }
       animate()
     }
 
-    // DNA
     if (pattern === 'dna') {
       let t = 0
       const animate = () => {
@@ -258,10 +209,8 @@ export default function AnimatedBg({ pattern = 'network' }) {
             const x2 = cx + amp * Math.sin((phase + 180) * Math.PI / 180)
             if (y % 24 === 0) {
               const a = Math.abs(Math.sin(phase * Math.PI / 180))
-              ctx.beginPath()
-              ctx.moveTo(x1, y); ctx.lineTo(x2, y)
-              ctx.strokeStyle = `${blue}${0.18 + a * 0.22})`
-              ctx.lineWidth = 0.8; ctx.stroke()
+              ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y)
+              ctx.strokeStyle = `${blue}${0.18 + a * 0.22})`; ctx.lineWidth = 0.8; ctx.stroke()
               ctx.beginPath(); ctx.arc(x1, y, 2.5, 0, Math.PI * 2)
               ctx.fillStyle = `${cyan}${0.5 + a * 0.5})`; ctx.fill()
               ctx.beginPath(); ctx.arc(x2, y, 2.5, 0, Math.PI * 2)
@@ -286,7 +235,6 @@ export default function AnimatedBg({ pattern = 'network' }) {
       animate()
     }
 
-    // MATRIX
     if (pattern === 'matrix') {
       const cols = Math.floor(canvas.width / 20)
       const drops = Array.from({ length: cols }, () => Math.random() * canvas.height / 16)
@@ -298,10 +246,9 @@ export default function AnimatedBg({ pattern = 'network' }) {
         t++
         if (t % 3 === 0) {
           drops.forEach((drop, i) => {
-            const char = chars[Math.floor(Math.random() * chars.length)]
             ctx.font = '11px monospace'
             ctx.fillStyle = `rgba(37,99,235,${Math.random() * 0.15 + 0.06})`
-            ctx.fillText(char, i * 20, drop * 16)
+            ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 20, drop * 16)
             if (drop * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0
             else drops[i]++
           })
@@ -325,7 +272,7 @@ export default function AnimatedBg({ pattern = 'network' }) {
         top: 0, left: 0,
         width: '100%',
         height: '100%',
-        zIndex: 0,
+        zIndex: -1,
         pointerEvents: 'none',
       }}
     />

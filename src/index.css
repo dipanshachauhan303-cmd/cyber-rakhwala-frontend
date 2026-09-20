@@ -11,7 +11,6 @@
   --primary-light: #3b82f6;
   --primary-dark: #1d4ed8;
   --cyan: #0ea5e9;
-  --bg-card: rgba(255,255,255,0.85);
   --border: rgba(59,130,246,0.15);
   --border-hover: rgba(59,130,246,0.35);
   --text-primary: #1e3a8a;
@@ -21,16 +20,21 @@
   --shadow-md: 0 4px 20px rgba(37,99,235,0.12);
 }
 
-html, body, #root {
+html {
   height: 100%;
-  font-family: 'Inter', sans-serif;
-  background: transparent;
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
 }
 
 body {
+  height: 100%;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
   background: #eef2ff;
+  color: #1e3a8a;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100%;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
