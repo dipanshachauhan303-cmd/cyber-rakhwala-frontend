@@ -13,6 +13,7 @@ const NAV = {
     { icon: LayoutDashboard, label: 'Overview', path: '/law-enforcement/dashboard' },
     { icon: Wrench, label: 'Tools', path: '/law-enforcement/tools' },
     { icon: FolderOpen, label: 'Cases', path: '/law-enforcement/cases' },
+    { icon: FileText, label: 'Report', path: '/law-enforcement/report' },
   ],
   admin: [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
@@ -50,6 +51,7 @@ export default function Sidebar({ role = 'law-enforcement', mobileOpen = false, 
 
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth <= 768)
+    fn()
     window.addEventListener('resize', fn)
     return () => window.removeEventListener('resize', fn)
   }, [])
@@ -66,6 +68,7 @@ export default function Sidebar({ role = 'law-enforcement', mobileOpen = false, 
 
   const renderLinks = () => (
     <>
+      {/* Header */}
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)', minHeight: '64px',
@@ -92,6 +95,7 @@ export default function Sidebar({ role = 'law-enforcement', mobileOpen = false, 
         )}
       </div>
 
+      {/* Role badge */}
       {(!collapsed || isMobile) && (
         <div style={{ padding: '10px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span style={{ background: badge.bg, color: badge.color, fontSize: '0.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -100,33 +104,49 @@ export default function Sidebar({ role = 'law-enforcement', mobileOpen = false, 
         </div>
       )}
 
+      {/* Nav links */}
       <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
         {links.map((link) => {
           const Icon = link.icon
           const isActive = location.pathname === link.path
           return (
-            <button key={link.path} onClick={() => handleNavigate(link.path)} style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
-              padding: collapsed && !isMobile ? '10px 0' : '10px 16px',
-              justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
-              background: isActive ? 'rgba(14,165,233,0.12)' : 'transparent',
-              borderRight: isActive ? '2px solid #0ea5e9' : '2px solid transparent',
-              border: 'none', cursor: 'pointer', color: isActive ? '#0ea5e9' : '#94a3b8',
-            }}>
+            <button
+              key={link.path}
+              onClick={() => handleNavigate(link.path)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                padding: collapsed && !isMobile ? '10px 0' : '10px 16px',
+                justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
+                background: isActive ? 'rgba(14,165,233,0.12)' : 'transparent',
+                borderRight: isActive ? '2px solid #0ea5e9' : '2px solid transparent',
+                border: 'none', cursor: 'pointer',
+                color: isActive ? '#0ea5e9' : '#94a3b8',
+                transition: 'all 0.15s ease',
+              }}
+            >
               <Icon size={16} />
-              {(!collapsed || isMobile) && <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}>{link.label}</span>}
+              {(!collapsed || isMobile) && (
+                <span style={{ fontSize: '0.875rem', fontWeight: isActive ? 600 : 400 }}>{link.label}</span>
+              )}
             </button>
           )
         })}
       </nav>
 
+      {/* Logout */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '8px' }}>
-        <button onClick={handleLogout} style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
-          padding: collapsed && !isMobile ? '10px 0' : '10px 12px',
-          justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
-          background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b', borderRadius: '6px',
-        }}>
+        <button
+          onClick={handleLogout}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+            padding: collapsed && !isMobile ? '10px 0' : '10px 12px',
+            justifyContent: collapsed && !isMobile ? 'center' : 'flex-start',
+            background: 'transparent', border: 'none', cursor: 'pointer',
+            color: '#64748b', borderRadius: '6px',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.1)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.background = 'transparent' }}
+        >
           <LogOut size={16} />
           {(!collapsed || isMobile) && <span style={{ fontSize: '0.875rem' }}>Sign out</span>}
         </button>

@@ -6,6 +6,7 @@ import NotFound from './pages/NotFound.jsx'
 import LEDashboard from './pages/law-enforcement/Dashboard.jsx'
 import LETools from './pages/law-enforcement/Tools.jsx'
 import LECases from './pages/law-enforcement/Cases.jsx'
+import LEReport from './pages/law-enforcement/Report.jsx'
 import AdminDashboard from './pages/admin/Dashboard.jsx'
 import AdminUsers from './pages/admin/Users.jsx'
 import AdminSettings from './pages/admin/Settings.jsx'
@@ -42,6 +43,11 @@ export default function App() {
       <Route path="/law-enforcement/cases" element={
         <ProtectedRoute allowedRoles={['law-enforcement']}>
           <LECases />
+        </ProtectedRoute>
+      } />
+      <Route path="/law-enforcement/report" element={
+        <ProtectedRoute allowedRoles={['law-enforcement']}>
+          <LEReport />
         </ProtectedRoute>
       } />
 
