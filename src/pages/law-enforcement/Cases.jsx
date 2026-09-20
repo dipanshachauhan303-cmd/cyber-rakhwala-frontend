@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
+import AnimatedBg from '../../components/shared/AnimatedBg.jsx'
 import {
   FolderOpen, Plus, Search, CheckCircle,
   Clock, X, Save, Eye, Trash2, AlertTriangle
@@ -14,7 +15,7 @@ const INITIAL_CASES = [
 ]
 
 const STATUS = {
-  active: { bg: '#d1fae5', color: '#059669', label: 'Active', icon: CheckCircle },
+  active: { bg: '#dbeafe', color: '#1d4ed8', label: 'Active', icon: CheckCircle },
   pending: { bg: '#fef3c7', color: '#d97706', label: 'Pending', icon: Clock },
   closed: { bg: '#f1f5f9', color: '#64748b', label: 'Closed', icon: FolderOpen },
 }
@@ -38,7 +39,7 @@ export default function LECases() {
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -87,18 +88,18 @@ export default function LECases() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
+      <AnimatedBg pattern="circuit" />
       <Sidebar role="law-enforcement" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <Topbar user={{ ...user, credits: 250 }} onMenuClick={() => setMobileMenuOpen(true)} />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
-          {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
-              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Active Cases</h1>
+              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>Active Cases</h1>
               <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Track and manage your investigations</p>
             </div>
             <button onClick={() => setShowModal(true)} className="btn-primary" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -109,13 +110,13 @@ export default function LECases() {
           {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
             {[
-              { label: 'Total', value: cases.length, color: '#0ea5e9' },
-              { label: 'Active', value: cases.filter(c => c.status === 'active').length, color: '#10b981' },
-              { label: 'Pending', value: cases.filter(c => c.status === 'pending').length, color: '#d97706' },
+              { label: 'Total', value: cases.length, grad: ['#2563eb', '#0ea5e9'] },
+              { label: 'Active', value: cases.filter(c => c.status === 'active').length, grad: ['#10b981', '#06b6d4'] },
+              { label: 'Pending', value: cases.filter(c => c.status === 'pending').length, grad: ['#f59e0b', '#f97316'] },
             ].map((s) => (
               <div key={s.label} className="cr-card" style={{ padding: '14px' }}>
-                <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>{s.label}</p>
-                <p style={{ fontSize: '1.75rem', fontWeight: 700, color: s.color }}>{s.value}</p>
+                <p style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>{s.label}</p>
+                <p style={{ fontSize: '1.75rem', fontWeight: 800, background: `linear-gradient(135deg, ${s.grad[0]}, ${s.grad[1]})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontFamily: 'JetBrains Mono, monospace' }}>{s.value}</p>
               </div>
             ))}
           </div>
@@ -123,17 +124,18 @@ export default function LECases() {
           {/* Filters */}
           <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', flex: 1, minWidth: '150px' }}>
-              <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+              <Search size={14} color="#93c5fd" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
               <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search cases..." className="cr-input" style={{ paddingLeft: '32px' }} />
             </div>
             <div style={{ display: 'flex', gap: '5px' }}>
               {['all', 'active', 'pending', 'closed'].map(s => (
                 <button key={s} onClick={() => setFilterStatus(s)} style={{
                   padding: '8px 10px', borderRadius: '6px', border: '1px solid',
-                  borderColor: filterStatus === s ? '#0ea5e9' : '#e2e8f0',
-                  background: filterStatus === s ? '#e0f2fe' : '#ffffff',
-                  color: filterStatus === s ? '#0284c7' : '#64748b',
+                  borderColor: filterStatus === s ? '#2563eb' : 'rgba(59,130,246,0.15)',
+                  background: filterStatus === s ? 'linear-gradient(135deg, #2563eb, #0ea5e9)' : 'rgba(255,255,255,0.7)',
+                  color: filterStatus === s ? '#ffffff' : '#64748b',
                   fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  backdropFilter: 'blur(6px)',
                 }}>{s}</button>
               ))}
             </div>
@@ -142,8 +144,8 @@ export default function LECases() {
           {/* Cases */}
           {filtered.length === 0 ? (
             <div className="cr-card" style={{ padding: '50px', textAlign: 'center' }}>
-              <FolderOpen size={36} color="#cbd5e1" style={{ margin: '0 auto 10px' }} />
-              <p style={{ color: '#94a3b8' }}>No cases found</p>
+              <FolderOpen size={36} color="#93c5fd" style={{ margin: '0 auto 10px' }} />
+              <p style={{ color: '#64748b' }}>No cases found</p>
               <button onClick={() => setShowModal(true)} className="btn-primary" style={{ marginTop: '14px', padding: '10px 20px' }}>
                 <Plus size={15} /> Create First Case
               </button>
@@ -157,20 +159,20 @@ export default function LECases() {
                 return (
                   <div key={c.id} className="cr-card" style={{ padding: isMobile ? '14px' : '18px' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                      <div style={{ width: '38px', height: '38px', background: s.bg, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: '38px', height: '38px', background: `linear-gradient(135deg, ${s.color}20, ${s.color}30)`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: `1px solid ${s.color}25` }}>
                         <SIcon size={16} color={s.color} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
-                          <p style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{c.title}</p>
+                          <p style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e3a8a' }}>{c.title}</p>
                           <span style={{ background: p.bg, color: p.color, fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: '20px', textTransform: 'capitalize' }}>{c.priority}</span>
                           <span style={{ background: s.bg, color: s.color, fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: '20px' }}>{s.label}</span>
                         </div>
                         <p style={{ fontSize: '0.78rem', color: '#64748b', marginBottom: '4px' }}>{c.description}</p>
-                        <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>{c.caseId} · {c.updated}</p>
+                        <p style={{ fontSize: '0.72rem', color: '#93c5fd', fontFamily: 'monospace' }}>{c.caseId} · {c.updated}</p>
                       </div>
                       <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
-                        <button onClick={() => setViewCase(c)} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                        <button onClick={() => setViewCase(c)} style={{ background: 'rgba(219,234,254,0.6)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#2563eb', display: 'flex', alignItems: 'center' }}>
                           <Eye size={13} />
                         </button>
                         <button onClick={() => setDeleteConfirm(c.id)} style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 8px', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center' }}>
@@ -188,24 +190,24 @@ export default function LECases() {
 
       {/* Create Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '480px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Create New Case</h3>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e3a8a' }}>Create New Case</h3>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd' }}><X size={20} /></button>
             </div>
             <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Case Title *</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Case Title *</label>
                 <input type="text" required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Enter case title" className="cr-input" />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Description</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Description</label>
                 <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Brief description" className="cr-input" rows={3} style={{ resize: 'vertical' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Status</label>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Status</label>
                   <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="cr-input">
                     <option value="active">Active</option>
                     <option value="pending">Pending</option>
@@ -213,7 +215,7 @@ export default function LECases() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Priority</label>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Priority</label>
                   <select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value })} className="cr-input">
                     <option value="high">High</option>
                     <option value="medium">Medium</option>
@@ -222,7 +224,7 @@ export default function LECases() {
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Tags (comma separated)</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tags (comma separated)</label>
                 <input type="text" value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} placeholder="fraud, cyber, identity" className="cr-input" />
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
@@ -238,14 +240,14 @@ export default function LECases() {
 
       {/* View Modal */}
       {viewCase && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '480px', padding: '24px' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '24px', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace', marginBottom: '3px' }}>{viewCase.caseId}</p>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>{viewCase.title}</h3>
+                <p style={{ fontSize: '0.72rem', color: '#93c5fd', fontFamily: 'monospace', marginBottom: '3px' }}>{viewCase.caseId}</p>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e3a8a' }}>{viewCase.title}</h3>
               </div>
-              <button onClick={() => setViewCase(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+              <button onClick={() => setViewCase(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd' }}><X size={20} /></button>
             </div>
             <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '16px', lineHeight: 1.6 }}>{viewCase.description}</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
@@ -255,9 +257,9 @@ export default function LECases() {
                 { label: 'Assignee', value: viewCase.assignee },
                 { label: 'Created', value: viewCase.created },
               ].map((row) => (
-                <div key={row.label} style={{ background: '#f8fafc', borderRadius: '8px', padding: '10px' }}>
-                  <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: '3px' }}>{row.label}</p>
-                  <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#0f172a', textTransform: 'capitalize' }}>{row.value}</p>
+                <div key={row.label} style={{ background: 'rgba(219,234,254,0.3)', borderRadius: '8px', padding: '10px', border: '1px solid rgba(59,130,246,0.1)' }}>
+                  <p style={{ fontSize: '0.68rem', color: '#93c5fd', fontWeight: 700, textTransform: 'uppercase', marginBottom: '3px' }}>{row.label}</p>
+                  <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1e3a8a', textTransform: 'capitalize' }}>{row.value}</p>
                 </div>
               ))}
             </div>
@@ -268,12 +270,12 @@ export default function LECases() {
 
       {/* Delete Confirm */}
       {deleteConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '360px', padding: '24px', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(30,58,138,0.3)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(20px)', borderRadius: '16px', width: '100%', maxWidth: '360px', padding: '24px', textAlign: 'center', border: '1px solid rgba(59,130,246,0.2)', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
             <div style={{ width: '48px', height: '48px', background: '#fee2e2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
               <AlertTriangle size={22} color="#dc2626" />
             </div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>Delete Case?</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px' }}>Delete Case?</h3>
             <p style={{ color: '#64748b', fontSize: '0.875rem', marginBottom: '18px' }}>This action cannot be undone.</p>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => setDeleteConfirm(null)} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '10px' }}>Cancel</button>

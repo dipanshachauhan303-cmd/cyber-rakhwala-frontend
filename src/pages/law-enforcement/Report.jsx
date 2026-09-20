@@ -2,20 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
-import { FileText, Download, Shield, Phone, CreditCard, Car, Building, Wifi, User, AlertTriangle, ChevronDown, ChevronUp, Printer } from 'lucide-react'
+import AnimatedBg from '../../components/shared/AnimatedBg.jsx'
+import { FileText, Download, Shield, Phone, CreditCard, Car, Building, Wifi, User, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 import jsPDF from 'jspdf'
-
-const SECTIONS = [
-  { key: 'subject', icon: User, label: 'Subject Identification', color: '#0ea5e9' },
-  { key: 'contact', icon: Phone, label: 'Contact Information', color: '#10b981' },
-  { key: 'banking', icon: CreditCard, label: 'Banking & Financial Details', color: '#f97316' },
-  { key: 'digital_payment', icon: CreditCard, label: 'Digital Payment Details', color: '#8b5cf6' },
-  { key: 'vehicle', icon: Car, label: 'Vehicle Details', color: '#ef4444' },
-  { key: 'business', icon: Building, label: 'Business Intelligence', color: '#0284c7' },
-  { key: 'digital_footprint', icon: Wifi, label: 'Digital Footprint', color: '#ec4899' },
-  { key: 'correlation', icon: Shield, label: 'Data Correlation', color: '#d97706' },
-  { key: 'assessment', icon: AlertTriangle, label: 'Overall Assessment', color: '#64748b' },
-]
 
 const EMPTY_REPORT = {
   target: '',
@@ -37,7 +26,6 @@ export default function ReportGenerator() {
   const [report, setReport] = useState(EMPTY_REPORT)
   const [expanded, setExpanded] = useState({ subject: true })
   const [generating, setGenerating] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -67,7 +55,6 @@ export default function ReportGenerator() {
       const margin = 15
       let y = 0
 
-      // Header
       doc.setFillColor(15, 23, 42)
       doc.rect(0, 0, W, 40, 'F')
       doc.setTextColor(255, 255, 255)
@@ -82,20 +69,19 @@ export default function ReportGenerator() {
       doc.text(`Generated: ${new Date().toLocaleString()}`, W - margin - 60, 32)
       y = 48
 
-      // Disclaimer banner
       doc.setFillColor(254, 243, 199)
       doc.rect(margin, y, W - margin * 2, 10, 'F')
       doc.setTextColor(146, 64, 14)
       doc.setFontSize(7)
       doc.setFont('helvetica', 'bold')
-      doc.text('⚠ FOR LAWFUL INTELLIGENCE AND INVESTIGATIVE PURPOSES ONLY — LAW ENFORCEMENT USE', margin + 3, y + 6.5)
+      doc.text('FOR LAWFUL INTELLIGENCE AND INVESTIGATIVE PURPOSES ONLY — LAW ENFORCEMENT USE', margin + 3, y + 6.5)
       y += 16
 
       const addSection = (title, emoji, fields) => {
         if (y > 260) { doc.addPage(); y = 15 }
-        doc.setFillColor(241, 245, 249)
+        doc.setFillColor(239, 246, 255)
         doc.rect(margin, y, W - margin * 2, 8, 'F')
-        doc.setTextColor(15, 23, 42)
+        doc.setTextColor(30, 58, 138)
         doc.setFontSize(10)
         doc.setFont('helvetica', 'bold')
         doc.text(`${emoji} ${title}`, margin + 3, y + 5.5)
@@ -123,7 +109,6 @@ export default function ReportGenerator() {
         ['State', report.subject.state],
         ['Address', report.subject.address],
       ])
-
       addSection('Contact Information', '📱', [
         ['Primary Mobile', report.contact.primary_mobile],
         ['Additional Numbers', report.contact.additional_numbers],
@@ -131,7 +116,6 @@ export default function ReportGenerator() {
         ['Activity Status', report.contact.activity_status],
         ['Email', report.contact.email],
       ])
-
       addSection('Banking & Financial Details', '🏦', [
         ['Linked Name', report.banking.linked_name],
         ['Account Number', report.banking.account_number],
@@ -142,7 +126,6 @@ export default function ReportGenerator() {
         ['District', report.banking.district],
         ['State', report.banking.state],
       ])
-
       addSection('Digital Payment Details', '💳', [
         ['UPI ID', report.digital_payment.upi_id],
         ['IMPS', report.digital_payment.imps],
@@ -150,7 +133,6 @@ export default function ReportGenerator() {
         ['RTGS', report.digital_payment.rtgs],
         ['UPI Status', report.digital_payment.upi_status],
       ])
-
       addSection('Vehicle Details', '🚗', [
         ['RC Number', report.vehicle.rc_number],
         ['Registration Date', report.vehicle.registration_date],
@@ -166,14 +148,12 @@ export default function ReportGenerator() {
         ['Owner Name', report.vehicle.owner_name],
         ['Address', report.vehicle.address],
       ])
-
       addSection('Business Intelligence', '🏪', [
         ['Business Name', report.business.name],
         ['Business Type', report.business.type],
         ['Role', report.business.role],
         ['Address', report.business.address],
       ])
-
       addSection('Digital Footprint', '🌐', [
         ['Caller Name', report.digital_footprint.caller_name],
         ['Carrier', report.digital_footprint.carrier],
@@ -183,24 +163,21 @@ export default function ReportGenerator() {
         ['Platforms', report.digital_footprint.platforms],
         ['Active Services', report.digital_footprint.services],
       ])
-
       addSection('Data Correlation', '🧩', [
         ['Central Identifier', report.correlation.central_id],
         ['Linked Systems', report.correlation.linked_systems],
         ['Key Observations', report.correlation.observations],
       ])
-
       addSection('Overall Assessment', '🧠', [
         ['Summary', report.assessment.summary],
         ['Key Observations', report.assessment.key_observations],
       ])
 
-      // Disclaimer
       if (y > 240) { doc.addPage(); y = 15 }
       y += 4
-      doc.setFillColor(248, 250, 252)
+      doc.setFillColor(239, 246, 255)
       doc.rect(margin, y, W - margin * 2, 30, 'F')
-      doc.setDrawColor(226, 232, 240)
+      doc.setDrawColor(219, 234, 254)
       doc.rect(margin, y, W - margin * 2, 30)
       doc.setTextColor(100, 116, 139)
       doc.setFontSize(7)
@@ -211,7 +188,6 @@ export default function ReportGenerator() {
       const dLines = doc.splitTextToSize(disclaimer, W - margin * 2 - 6)
       doc.text(dLines, margin + 3, y + 12)
 
-      // Footer
       const pageCount = doc.getNumberOfPages()
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i)
@@ -229,15 +205,17 @@ export default function ReportGenerator() {
   }
 
   const inputStyle = {
-    width: '100%', padding: '8px 12px', borderRadius: '6px',
-    border: '1px solid #e2e8f0', fontSize: '0.85rem',
-    background: '#ffffff', color: '#0f172a', outline: 'none',
+    width: '100%', padding: '8px 12px', borderRadius: '8px',
+    border: '1px solid rgba(59,130,246,0.2)', fontSize: '0.85rem',
+    background: 'rgba(255,255,255,0.8)', color: '#1e3a8a', outline: 'none',
+    fontFamily: 'Inter, sans-serif', backdropFilter: 'blur(6px)',
     boxSizing: 'border-box',
   }
 
   const labelStyle = {
-    display: 'block', fontSize: '0.78rem', fontWeight: 600,
-    color: '#64748b', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em',
+    display: 'block', fontSize: '0.72rem', fontWeight: 700,
+    color: '#2563eb', marginBottom: '4px',
+    textTransform: 'uppercase', letterSpacing: '0.06em',
   }
 
   const renderFields = (sectionKey, fields) => (
@@ -246,55 +224,43 @@ export default function ReportGenerator() {
         <div key={field} style={{ gridColumn: multiline ? '1 / -1' : 'auto' }}>
           <label style={labelStyle}>{label}</label>
           {multiline ? (
-            <textarea
-              value={report[sectionKey][field]}
-              onChange={e => updateField(sectionKey, field, e.target.value)}
-              rows={3}
-              style={{ ...inputStyle, resize: 'vertical' }}
-              placeholder={`Enter ${label.toLowerCase()}...`}
-            />
+            <textarea value={report[sectionKey][field]} onChange={e => updateField(sectionKey, field, e.target.value)} rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder={`Enter ${label.toLowerCase()}...`} />
           ) : (
-            <input
-              type="text"
-              value={report[sectionKey][field]}
-              onChange={e => updateField(sectionKey, field, e.target.value)}
-              style={inputStyle}
-              placeholder={`Enter ${label.toLowerCase()}...`}
-            />
+            <input type="text" value={report[sectionKey][field]} onChange={e => updateField(sectionKey, field, e.target.value)} style={inputStyle} placeholder={`Enter ${label.toLowerCase()}...`} />
           )}
         </div>
       ))}
     </div>
   )
 
+  const SECTIONS = [
+    { key: 'subject', label: '👤 Subject Identification', fields: [['full_name', 'Full Name', false], ['name_variants', 'Name Variants', false], ['state', 'State', false], ['address', 'Address', true]] },
+    { key: 'contact', label: '📱 Contact Information', fields: [['primary_mobile', 'Primary Mobile', false], ['additional_numbers', 'Additional Numbers', false], ['telecom_operator', 'Telecom Operator', false], ['activity_status', 'Activity Status', false], ['email', 'Email Address', false]] },
+    { key: 'banking', label: '🏦 Banking & Financial Details', fields: [['linked_name', 'Linked Name / Entity', false], ['account_number', 'Account Number', false], ['bank', 'Bank Name', false], ['account_type', 'Account Type', false], ['ifsc', 'IFSC Code', false], ['branch', 'Branch', false], ['district', 'District', false], ['state', 'State', false]] },
+    { key: 'digital_payment', label: '💳 Digital Payment Details', fields: [['upi_id', 'UPI ID', false], ['imps', 'IMPS', false], ['neft', 'NEFT', false], ['rtgs', 'RTGS', false], ['upi_status', 'UPI Status', false]] },
+    { key: 'vehicle', label: '🚗 Vehicle Details', fields: [['rc_number', 'RC Number', false], ['registration_date', 'Registration Date', false], ['rto', 'RTO Authority', false], ['manufacturer', 'Manufacturer', false], ['model', 'Model', false], ['vehicle_type', 'Vehicle Type', false], ['fuel_type', 'Fuel Type', false], ['color', 'Color', false], ['chassis', 'Chassis Number', false], ['engine', 'Engine Number', false], ['insurance', 'Insurance Company', false], ['owner_name', 'Owner Name', false], ['address', 'Registered Address', true]] },
+    { key: 'business', label: '🏪 Business Intelligence', fields: [['name', 'Business Name', false], ['type', 'Business Type', false], ['role', 'Role / Inference', false], ['address', 'Business Address', true]] },
+    { key: 'digital_footprint', label: '🌐 Digital Footprint', fields: [['caller_name', 'Caller ID Name', false], ['carrier', 'Carrier', false], ['region', 'Region', false], ['last_seen', 'Last Seen', false], ['google_profile', 'Google Profile Link', false], ['platforms', 'Account Presence', false], ['services', 'Active Services', false]] },
+    { key: 'correlation', label: '🧩 Data Correlation', fields: [['central_id', 'Central Linking Identifier', false], ['linked_systems', 'Linked Systems', false], ['observations', 'Key Observations', true]] },
+    { key: 'assessment', label: '🧠 Overall Assessment', fields: [['summary', 'Summary', true], ['key_observations', 'Key Observations', true]] },
+  ]
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
+      <AnimatedBg pattern="dna" />
       <Sidebar role="law-enforcement" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <Topbar user={{ ...user, credits: 250 }} onMenuClick={() => setMobileMenuOpen(true)} />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
-          {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
             <div>
-              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>
-                Report Generator
-              </h1>
+              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>Report Generator</h1>
               <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Generate EVIDENTIX-style OSINT intelligence reports</p>
             </div>
-            <button
-              onClick={generatePDF}
-              disabled={generating}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '10px 20px', background: '#0f172a', color: '#ffffff',
-                border: 'none', borderRadius: '8px', fontWeight: 600,
-                fontSize: '0.875rem', cursor: generating ? 'not-allowed' : 'pointer',
-                opacity: generating ? 0.7 : 1,
-              }}
-            >
+            <button onClick={generatePDF} disabled={generating} className="btn-primary" style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Download size={16} />
               {generating ? 'Generating...' : 'Download PDF'}
             </button>
@@ -302,7 +268,7 @@ export default function ReportGenerator() {
 
           {/* Target info */}
           <div className="cr-card" style={{ padding: isMobile ? '16px' : '20px', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', marginBottom: '14px' }}>Report Details</h3>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '14px' }}>Report Details</h3>
             <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
               <div>
                 <label style={labelStyle}>Target (Phone/Name/ID)</label>
@@ -316,130 +282,21 @@ export default function ReportGenerator() {
           </div>
 
           {/* Sections */}
-          {[
-            {
-              key: 'subject', label: '👤 Subject Identification', fields: [
-                ['full_name', 'Full Name', false],
-                ['name_variants', 'Name Variants', false],
-                ['state', 'State', false],
-                ['address', 'Address', true],
-              ]
-            },
-            {
-              key: 'contact', label: '📱 Contact Information', fields: [
-                ['primary_mobile', 'Primary Mobile', false],
-                ['additional_numbers', 'Additional Numbers', false],
-                ['telecom_operator', 'Telecom Operator', false],
-                ['activity_status', 'Activity Status', false],
-                ['email', 'Email Address', false],
-              ]
-            },
-            {
-              key: 'banking', label: '🏦 Banking & Financial Details', fields: [
-                ['linked_name', 'Linked Name / Entity', false],
-                ['account_number', 'Account Number', false],
-                ['bank', 'Bank Name', false],
-                ['account_type', 'Account Type', false],
-                ['ifsc', 'IFSC Code', false],
-                ['branch', 'Branch', false],
-                ['district', 'District', false],
-                ['state', 'State', false],
-              ]
-            },
-            {
-              key: 'digital_payment', label: '💳 Digital Payment Details', fields: [
-                ['upi_id', 'UPI ID', false],
-                ['imps', 'IMPS', false],
-                ['neft', 'NEFT', false],
-                ['rtgs', 'RTGS', false],
-                ['upi_status', 'UPI Status', false],
-              ]
-            },
-            {
-              key: 'vehicle', label: '🚗 Vehicle Details', fields: [
-                ['rc_number', 'RC Number', false],
-                ['registration_date', 'Registration Date', false],
-                ['rto', 'RTO / Registration Authority', false],
-                ['manufacturer', 'Manufacturer', false],
-                ['model', 'Model', false],
-                ['vehicle_type', 'Vehicle Type', false],
-                ['fuel_type', 'Fuel Type', false],
-                ['color', 'Color', false],
-                ['chassis', 'Chassis Number', false],
-                ['engine', 'Engine Number', false],
-                ['insurance', 'Insurance Company', false],
-                ['owner_name', 'Owner Name', false],
-                ['address', 'Registered Address', true],
-              ]
-            },
-            {
-              key: 'business', label: '🏪 Business Intelligence', fields: [
-                ['name', 'Business Name', false],
-                ['type', 'Business Type', false],
-                ['role', 'Role / Inference', false],
-                ['address', 'Business Address', true],
-              ]
-            },
-            {
-              key: 'digital_footprint', label: '🌐 Digital Footprint', fields: [
-                ['caller_name', 'Caller ID Name', false],
-                ['carrier', 'Carrier', false],
-                ['region', 'Region', false],
-                ['last_seen', 'Last Seen', false],
-                ['google_profile', 'Google Profile Link', false],
-                ['platforms', 'Account Presence (platforms)', false],
-                ['services', 'Active Google Services', false],
-              ]
-            },
-            {
-              key: 'correlation', label: '🧩 Data Correlation', fields: [
-                ['central_id', 'Central Linking Identifier', false],
-                ['linked_systems', 'Linked Systems', false],
-                ['observations', 'Key Observations', true],
-              ]
-            },
-            {
-              key: 'assessment', label: '🧠 Overall Assessment', fields: [
-                ['summary', 'Summary', true],
-                ['key_observations', 'Key Observations', true],
-              ]
-            },
-          ].map((section) => (
+          {SECTIONS.map((section) => (
             <div key={section.key} className="cr-card" style={{ marginBottom: '12px', overflow: 'hidden' }}>
-              <button
-                onClick={() => toggleSection(section.key)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
-                  borderBottom: expanded[section.key] ? '1px solid #e2e8f0' : 'none',
-                }}
-              >
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a' }}>{section.label}</span>
-                {expanded[section.key] ? <ChevronUp size={16} color="#64748b" /> : <ChevronDown size={16} color="#64748b" />}
+              <button onClick={() => toggleSection(section.key)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: expanded[section.key] ? '1px solid rgba(59,130,246,0.1)' : 'none' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#1e3a8a' }}>{section.label}</span>
+                {expanded[section.key] ? <ChevronUp size={16} color="#93c5fd" /> : <ChevronDown size={16} color="#93c5fd" />}
               </button>
               {expanded[section.key] && renderFields(section.key, section.fields)}
             </div>
           ))}
 
-          {/* Download button bottom */}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setReport(EMPTY_REPORT)}
-              style={{ padding: '10px 20px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', color: '#64748b' }}
-            >
+            <button onClick={() => setReport(EMPTY_REPORT)} className="btn-secondary" style={{ padding: '10px 20px' }}>
               Clear All
             </button>
-            <button
-              onClick={generatePDF}
-              disabled={generating}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                padding: '10px 24px', background: '#0f172a', color: '#ffffff',
-                border: 'none', borderRadius: '8px', fontWeight: 600,
-                fontSize: '0.875rem', cursor: generating ? 'not-allowed' : 'pointer',
-                opacity: generating ? 0.7 : 1,
-              }}
-            >
+            <button onClick={generatePDF} disabled={generating} className="btn-primary" style={{ padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Download size={16} />
               {generating ? 'Generating PDF...' : 'Download PDF Report'}
             </button>
