@@ -3,37 +3,50 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
 import {
-  Search, Zap, Phone, Globe, Mail, Hash, Image,
-  Link, MapPin, Database, Wifi, MessageCircle,
-  Car, CreditCard, Shield, Users, Activity,
-  X, ArrowUpRight
+  Phone, Users, Activity, Car, CreditCard, Shield,
+  Search, Globe, Mail, Hash, Image, Link, MapPin,
+  Database, Wifi, MessageCircle, Zap, X, ArrowUpRight,
+  Building, FileText
 } from 'lucide-react'
 
-const TOOLS = [
-  { id: 'ip-tracer', icon: Wifi, label: 'IP Tracer', code: 'trace-ip', credits: 23, category: 'Network' },
-  { id: 'domain-intel', icon: Globe, label: 'Domain Intel', code: 'dnslookup', credits: 18, category: 'OSINT' },
-  { id: 'email-osint', icon: Mail, label: 'Email OSINT', code: 'email-trace', credits: 27, category: 'OSINT' },
-  { id: 'phone-lookup', icon: Phone, label: 'Phone Lookup', code: 'phone-intel', credits: 30, category: 'OSINT' },
-  { id: 'social-scan', icon: Users, label: 'Social Scan', code: 'social-scan', credits: 38, category: 'OSINT' },
-  { id: 'hash-check', icon: Hash, label: 'Hash Analyzer', code: 'hash-check', credits: 15, category: 'Forensics' },
-  { id: 'img-data', icon: Image, label: 'Image EXIF', code: 'img-data', credits: 33, category: 'Forensics' },
-  { id: 'url-scan', icon: Link, label: 'URL Scanner', code: 'url-scan', credits: 21, category: 'Threat' },
-  { id: 'geo-lookup', icon: MapPin, label: 'Geo Lookup', code: 'geo-lookup', credits: 24, category: 'Geospatial' },
-  { id: 'breach-db', icon: Database, label: 'Breach DB', code: 'breach-db', credits: 30, category: 'Security' },
-  { id: 'dns-enum', icon: Globe, label: 'DNS Enum', code: 'dns-enum', credits: 18, category: 'Network' },
-  { id: 'port-scan', icon: Wifi, label: 'Port Scan', code: 'port-scan', credits: 27, category: 'Network' },
-  { id: 'wa-trace', icon: MessageCircle, label: 'WhatsApp Trace', code: 'wa-trace', credits: 30, category: 'Communication' },
-  { id: 'face-scan', icon: Users, label: 'Face Recon', code: 'face-scan', credits: 38, category: 'Biometric' },
-  { id: 'vehicle-lookup', icon: Car, label: 'Vehicle Info', code: 'vehicle-lookup', credits: 23, category: 'Records' },
-  { id: 'upi-trace', icon: CreditCard, label: 'UPI Lookup', code: 'upi-trace', credits: 27, category: 'Financial' },
-  { id: 'aadhaar-lookup', icon: Shield, label: 'Aadhaar Info', code: 'aadhaar-lookup', credits: 30, category: 'Identity' },
-  { id: 'pan-trace', icon: CreditCard, label: 'PAN Lookup', code: 'pan-trace', credits: 27, category: 'Financial' },
-  { id: 'cdr-analyze', icon: Activity, label: 'CDR Analysis', code: 'cdr-analyze', credits: 38, category: 'Telecom' },
-  { id: 'ipdr-analyze', icon: Activity, label: 'IPDR Analysis', code: 'ipdr-analyze', credits: 38, category: 'Telecom' },
-  { id: 'person-lookup', icon: Users, label: 'Person Lookup', code: 'person-lookup', credits: 30, category: 'Records' },
-]
+const CATEGORIES = ['All', 'OSINT', 'Network', 'Forensics', 'Financial', 'Identity', 'Records', 'Business', 'Communication', 'Geospatial']
 
-const CATEGORIES = ['All', 'Network', 'OSINT', 'Forensics', 'Threat', 'Geospatial', 'Security', 'Communication', 'Biometric', 'Records', 'Financial', 'Identity', 'Telecom']
+const TOOLS = [
+  { id: 'phone-lookup', icon: Phone, label: 'Phone Lookup', desc: 'Phone number intelligence', credits: 14, category: 'OSINT' },
+  { id: 'domain-intel', icon: Globe, label: 'Domain Analysis', desc: 'Investigate domain info', credits: 8, category: 'OSINT' },
+  { id: 'email-osint', icon: Mail, label: 'Email Forensics', desc: 'Analyze email headers', credits: 12, category: 'Forensics' },
+  { id: 'social-scan', icon: Users, label: 'Social Profiler', desc: 'Social media recon', credits: 16, category: 'OSINT' },
+  { id: 'hash-check', icon: Hash, label: 'Hash Analyzer', desc: 'Verify file integrity', credits: 6, category: 'Forensics' },
+  { id: 'img-data', icon: Image, label: 'Image EXIF', desc: 'Extract image metadata', credits: 15, category: 'Forensics' },
+  { id: 'url-scan', icon: Link, label: 'URL Scanner', desc: 'Scan URLs for threats', credits: 10, category: 'Network' },
+  { id: 'geo-lookup', icon: MapPin, label: 'Geolocation', desc: 'Geographic intelligence', credits: 12, category: 'Geospatial' },
+  { id: 'breach-db', icon: Database, label: 'Breach Database', desc: 'Check data breaches', credits: 30, category: 'Network' },
+  { id: 'dns-enum', icon: Globe, label: 'DNS Records', desc: 'Query DNS records', credits: 8, category: 'Network' },
+  { id: 'ip-tracer', icon: Wifi, label: 'IP Intelligence', desc: 'Trace and analyze IP', credits: 10, category: 'Network' },
+  { id: 'ip-tracker', icon: Wifi, label: 'IP Tracker', desc: 'Real-time IP tracking', credits: 15, category: 'Network' },
+  { id: 'wa-trace', icon: MessageCircle, label: 'WhatsApp Trace', desc: 'Trace WhatsApp IPs', credits: 20, category: 'Communication' },
+  { id: 'vehicle-lookup', icon: Car, label: 'Vehicle Info', desc: 'RTO database lookup', credits: 15, category: 'Records' },
+  { id: 'upi-trace', icon: CreditCard, label: 'UPI Lookup', desc: 'NPCI/UPI ID lookup', credits: 18, category: 'Financial' },
+  { id: 'pan-trace', icon: CreditCard, label: 'PAN Lookup', desc: 'Income Tax database', credits: 18, category: 'Financial' },
+  { id: 'num-upi', icon: CreditCard, label: 'Number to UPI', desc: 'Find UPI IDs by number', credits: 20, category: 'Financial' },
+  { id: 'num-image', icon: Image, label: 'Number to Image', desc: 'Images by phone number', credits: 25, category: 'OSINT' },
+  { id: 'osint-tools', icon: Search, label: 'OSINT Tools', desc: 'Open source intelligence', credits: 30, category: 'OSINT' },
+  // Identity
+  { id: 'pan-verify', icon: CreditCard, label: 'PAN Verification', desc: 'Verify PAN number instantly', credits: 18, category: 'Identity' },
+  { id: 'pan-details', icon: CreditCard, label: 'PAN Details', desc: 'Get full PAN card details', credits: 20, category: 'Identity' },
+  { id: 'dl-verify', icon: Car, label: 'Driving License Verification', desc: 'Verify driving license', credits: 18, category: 'Records' },
+  // Business
+  { id: 'gst-verify', icon: Building, label: 'GST Verification', desc: 'Verify GST number', credits: 15, category: 'Business' },
+  { id: 'mca-company', icon: Building, label: 'MCA Company Search', desc: 'Search company in MCA', credits: 20, category: 'Business' },
+  // Vehicle
+  { id: 'rc-verify', icon: Car, label: 'RC Verification', desc: 'Verify vehicle RC', credits: 15, category: 'Records' },
+  { id: 'rc-lite', icon: Car, label: 'RC Lite', desc: 'Quick RC lookup', credits: 12, category: 'Records' },
+  { id: 'vehicle-challan', icon: Car, label: 'Vehicle Challan', desc: 'Check pending challans', credits: 15, category: 'Records' },
+  // Banking & UPI
+  { id: 'ifsc-details', icon: Database, label: 'Bank Details by IFSC', desc: 'Get bank details from IFSC', credits: 10, category: 'Financial' },
+  { id: 'upi-verify', icon: CreditCard, label: 'UPI Verification', desc: 'Verify UPI ID', credits: 15, category: 'Financial' },
+  { id: 'upi-validate', icon: CreditCard, label: 'UPI Validate', desc: 'Validate UPI payment address', credits: 15, category: 'Financial' },
+]
 
 export default function StudentTools() {
   const navigate = useNavigate()
@@ -87,7 +100,7 @@ export default function StudentTools() {
 
           <div style={{ marginBottom: '20px' }}>
             <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Tools</h1>
-            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>All available OSINT tools — 1.5x credit cost for students</p>
+            <p style={{ color: '#64748b', fontSize: '0.875rem' }}>{TOOLS.length} tools available — 1.5x credit cost for students</p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
@@ -130,13 +143,10 @@ export default function StudentTools() {
                     </span>
                   </div>
                   <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a', marginBottom: '2px' }}>{tool.label}</p>
-                  {!isMobile && <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontFamily: 'monospace', marginBottom: '6px' }}>{tool.code}</p>}
+                  {!isMobile && <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginBottom: '6px' }}>{tool.desc}</p>}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
                     <span style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.62rem', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>{tool.category}</span>
-                    <button
-                      onClick={() => { setActiveTool(tool); setResult(null); setToolInput('') }}
-                      style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
-                    >
+                    <button onClick={() => { setActiveTool(tool); setResult(null); setToolInput('') }} style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '5px', padding: '4px 10px', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
                       Run <ArrowUpRight size={11} />
                     </button>
                   </div>
@@ -157,7 +167,7 @@ export default function StudentTools() {
                 </div>
                 <div>
                   <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>{activeTool.label}</p>
-                  <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>{activeTool.code}</p>
+                  <p style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{activeTool.desc}</p>
                 </div>
               </div>
               <button onClick={() => { setActiveTool(null); setResult(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}>
@@ -183,7 +193,7 @@ export default function StudentTools() {
             </form>
             {result && (
               <div style={{ marginTop: '14px', padding: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px' }}>
-                <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#166834', marginBottom: '3px' }}>✓ Query processed</p>
+                <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#166534', marginBottom: '3px' }}>✓ Query processed</p>
                 <p style={{ fontSize: '0.78rem', color: '#15803d' }}>{result.message}</p>
                 <p style={{ fontSize: '0.72rem', color: '#86efac', marginTop: '3px' }}>{result.timestamp}</p>
               </div>

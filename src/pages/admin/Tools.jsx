@@ -14,7 +14,7 @@ const INITIAL_TOOLS = [
   { id: 7, name: 'PAN Lookup', code: 'pan-trace', category: 'Financial', credits: 18, visible: true, roles: ['law-enforcement', 'student'] },
   { id: 8, name: 'IPDR Analysis', code: 'ipdr-analyze', category: 'Telecom', credits: 25, visible: true, roles: ['law-enforcement'] },
   { id: 9, name: 'Person Location', code: 'person-lookup', category: 'Records', credits: 20, visible: true, roles: ['law-enforcement'] },
-  { id: 10, name: 'Breach Database', code: 'breach-db', category: 'Security', credits: 30, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 10, name: 'Breach Database', code: 'breach-db', category: 'Network', credits: 30, visible: true, roles: ['law-enforcement', 'student'] },
   { id: 11, name: 'IP Intelligence', code: 'trace-ip', category: 'Network', credits: 10, visible: true, roles: ['law-enforcement', 'student'] },
   { id: 12, name: 'Domain Analysis', code: 'dnslookup', category: 'OSINT', credits: 8, visible: true, roles: ['law-enforcement', 'student'] },
   { id: 13, name: 'Email Forensics', code: 'email-trace', category: 'Forensics', credits: 12, visible: true, roles: ['law-enforcement', 'student'] },
@@ -35,6 +35,59 @@ const INITIAL_TOOLS = [
   { id: 28, name: 'Number to UPI', code: 'num-upi', category: 'Financial', credits: 20, visible: true, roles: ['law-enforcement', 'student'] },
   { id: 29, name: 'Number to Image', code: 'num-image', category: 'OSINT', credits: 25, visible: true, roles: ['law-enforcement', 'student'] },
   { id: 30, name: 'OSINT Tools', code: 'osint-tools', category: 'OSINT', credits: 30, visible: true, roles: ['law-enforcement', 'student'] },
+  // Identity
+  { id: 31, name: 'Aadhaar Send OTP', code: 'aadhaar-otp', category: 'Identity', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 32, name: 'Aadhaar Submit OTP', code: 'aadhaar-submit-otp', category: 'Identity', credits: 25, visible: true, roles: ['law-enforcement'] },
+  { id: 33, name: 'PAN Verification', code: 'pan-verify', category: 'Identity', credits: 18, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 34, name: 'PAN Details', code: 'pan-details', category: 'Identity', credits: 20, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 35, name: 'Aadhaar OCR', code: 'aadhaar-ocr', category: 'Identity', credits: 22, visible: true, roles: ['law-enforcement'] },
+  { id: 36, name: 'PAN OCR', code: 'pan-ocr', category: 'Identity', credits: 22, visible: true, roles: ['law-enforcement'] },
+  { id: 37, name: 'Aadhaar–PAN Link Check', code: 'aadhaar-pan-link', category: 'Identity', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 38, name: 'Voter ID Verification', code: 'voter-id', category: 'Identity', credits: 18, visible: true, roles: ['law-enforcement'] },
+  { id: 39, name: 'Passport Verification', code: 'passport-verify', category: 'Identity', credits: 25, visible: true, roles: ['law-enforcement'] },
+  { id: 40, name: 'Driving License Verification', code: 'dl-verify', category: 'Records', credits: 18, visible: true, roles: ['law-enforcement', 'student'] },
+  // Business
+  { id: 41, name: 'GST Verification', code: 'gst-verify', category: 'Business', credits: 15, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 42, name: 'GST Return Status', code: 'gst-return', category: 'Business', credits: 18, visible: true, roles: ['law-enforcement'] },
+  { id: 43, name: 'GST Advance Details', code: 'gst-advance', category: 'Business', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 44, name: 'PAN No by GST No', code: 'pan-by-gst', category: 'Business', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 45, name: 'MCA Company Search', code: 'mca-company', category: 'Business', credits: 20, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 46, name: 'MCA CIN Search', code: 'mca-cin', category: 'Business', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 47, name: 'Name to CIN List', code: 'name-to-cin', category: 'Business', credits: 18, visible: true, roles: ['law-enforcement'] },
+  { id: 48, name: 'DIN Details', code: 'din-details', category: 'Business', credits: 18, visible: true, roles: ['law-enforcement'] },
+  // Vehicle
+  { id: 49, name: 'RC Verification', code: 'rc-verify', category: 'Records', credits: 15, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 50, name: 'RC Details', code: 'rc-details', category: 'Records', credits: 18, visible: true, roles: ['law-enforcement'] },
+  { id: 51, name: 'RC Lite', code: 'rc-lite', category: 'Records', credits: 12, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 52, name: 'RC Owner History', code: 'rc-owner-history', category: 'Records', credits: 25, visible: true, roles: ['law-enforcement'] },
+  { id: 53, name: 'RC Number to Mobile', code: 'rc-to-mobile', category: 'Records', credits: 30, visible: true, roles: ['law-enforcement'] },
+  { id: 54, name: 'Vehicle Challan', code: 'vehicle-challan', category: 'Records', credits: 15, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 55, name: 'FasTag Info Fetch', code: 'fastag-info', category: 'Records', credits: 15, visible: true, roles: ['law-enforcement'] },
+  // Banking & UPI
+  { id: 56, name: 'Bank Verification', code: 'bank-verify', category: 'Financial', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 57, name: 'Bank Details by IFSC', code: 'ifsc-details', category: 'Financial', credits: 10, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 58, name: 'UPI Verification', code: 'upi-verify', category: 'Financial', credits: 15, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 59, name: 'UPI Validate', code: 'upi-validate', category: 'Financial', credits: 15, visible: true, roles: ['law-enforcement', 'student'] },
+  { id: 60, name: 'VPA Info', code: 'vpa-info', category: 'Financial', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 61, name: 'Mobile No to VPA', code: 'mobile-to-vpa', category: 'Financial', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 62, name: 'Find UPI & Name by Mobile', code: 'upi-name-mobile', category: 'Financial', credits: 22, visible: true, roles: ['law-enforcement'] },
+  { id: 63, name: 'Mobile to Multiple UPI', code: 'mobile-multi-upi', category: 'Financial', credits: 25, visible: true, roles: ['law-enforcement'] },
+  { id: 64, name: 'Mobile to Multiple Account', code: 'mobile-multi-account', category: 'Financial', credits: 25, visible: true, roles: ['law-enforcement'] },
+  { id: 65, name: 'Mobile to IFSC & Account', code: 'mobile-ifsc-account', category: 'Financial', credits: 25, visible: true, roles: ['law-enforcement'] },
+  // Utility
+  { id: 66, name: 'Electricity Bill Fetch', code: 'electricity-bill', category: 'Utility', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 67, name: 'Gas Info Fetch', code: 'gas-info', category: 'Utility', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 68, name: 'Gas Pipeline', code: 'gas-pipeline', category: 'Utility', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 69, name: 'Water Bill', code: 'water-bill', category: 'Utility', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 70, name: 'Postpaid Bill Fetch', code: 'postpaid-bill', category: 'Utility', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 71, name: 'Broadband Bill', code: 'broadband-bill', category: 'Utility', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 72, name: 'Landline Bill', code: 'landline-bill', category: 'Utility', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 73, name: 'EMI Payment Fetch', code: 'emi-fetch', category: 'Utility', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 74, name: 'Insurance Info Fetch', code: 'insurance-info', category: 'Utility', credits: 20, visible: true, roles: ['law-enforcement'] },
+  // DigiLocker
+  { id: 75, name: 'DigiLocker Init', code: 'digilocker-init', category: 'DigiLocker', credits: 20, visible: true, roles: ['law-enforcement'] },
+  { id: 76, name: 'DigiLocker Status', code: 'digilocker-status', category: 'DigiLocker', credits: 15, visible: true, roles: ['law-enforcement'] },
+  { id: 77, name: 'DigiLocker Aadhaar Details', code: 'digilocker-aadhaar', category: 'DigiLocker', credits: 25, visible: true, roles: ['law-enforcement'] },
 ]
 
 const ROLE_COLORS = {
@@ -51,7 +104,7 @@ export default function AdminTools() {
   const [editTool, setEditTool] = useState(null)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -73,7 +126,6 @@ export default function AdminTools() {
   )
 
   const toggleVisible = (id) => setTools(tools.map(t => t.id === id ? { ...t, visible: !t.visible } : t))
-
   const openEdit = (tool) => { setEditTool(tool); setForm({ ...tool, roles: tool.roles.join(', ') }) }
 
   const handleSave = (e) => {
@@ -93,7 +145,7 @@ export default function AdminTools() {
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
       <Sidebar role="admin" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0 }}>
         <Topbar user={user} onMenuClick={() => setMobileMenuOpen(true)} />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
@@ -108,7 +160,6 @@ export default function AdminTools() {
             </span>
           </div>
 
-          {/* Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
             {[
               { label: 'Total', value: tools.length, color: '#0ea5e9' },
@@ -123,13 +174,11 @@ export default function AdminTools() {
             ))}
           </div>
 
-          {/* Search */}
           <div style={{ position: 'relative', marginBottom: '14px', maxWidth: '300px' }}>
             <Search size={14} color="#94a3b8" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
             <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search tools..." className="cr-input" style={{ paddingLeft: '32px' }} />
           </div>
 
-          {/* Mobile cards */}
           {isMobile ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {filtered.map((tool) => (
@@ -139,7 +188,7 @@ export default function AdminTools() {
                       <p style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{tool.name}</p>
                       <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'monospace' }}>{tool.code}</p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Zap size={12} color="#d97706" />
                       <span style={{ fontWeight: 700, color: '#d97706', fontSize: '0.82rem' }}>{tool.credits}</span>
                     </div>
@@ -217,7 +266,6 @@ export default function AdminTools() {
         </main>
       </div>
 
-      {/* Edit Modal */}
       {editTool && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
           <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '420px', padding: '24px' }}>
