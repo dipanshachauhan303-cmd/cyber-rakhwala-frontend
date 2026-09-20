@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
+import AnimatedBg from '../../components/shared/AnimatedBg.jsx'
 import { FileText, Save, Edit2, X, Check, Plus, Trash2 } from 'lucide-react'
 
 const INITIAL_BLOCKS = [
@@ -14,7 +15,7 @@ const INITIAL_BLOCKS = [
 ]
 
 const PAGE_COLORS = {
-  Homepage: { bg: '#e0f2fe', color: '#0284c7' },
+  Homepage: { bg: '#dbeafe', color: '#1d4ed8' },
   Login: { bg: '#ede9fe', color: '#7c3aed' },
   Global: { bg: '#fef3c7', color: '#d97706' },
   Student: { bg: '#d1fae5', color: '#059669' },
@@ -32,7 +33,7 @@ export default function AdminContent() {
   const [showAdd, setShowAdd] = useState(false)
   const [newBlock, setNewBlock] = useState({ title: '', key: '', type: 'text', value: '', page: 'Global' })
   const [filterPage, setFilterPage] = useState('All')
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -72,18 +73,35 @@ export default function AdminContent() {
     setShowAdd(false)
   }
 
+  const modalStyle = {
+    position: 'fixed', inset: 0,
+    background: 'rgba(30,58,138,0.3)',
+    backdropFilter: 'blur(8px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 50, padding: '16px'
+  }
+
+  const cardStyle = {
+    background: 'rgba(255,255,255,0.95)',
+    backdropFilter: 'blur(20px)',
+    borderRadius: '16px',
+    border: '1px solid rgba(59,130,246,0.2)',
+    boxShadow: '0 20px 60px rgba(37,99,235,0.2)',
+  }
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
+      <AnimatedBg pattern="constellation" />
       <Sidebar role="admin" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <Topbar user={user} onMenuClick={() => setMobileMenuOpen(true)} />
 
         <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
-              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Content</h1>
+              <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>Content</h1>
               <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Homepage and site content blocks</p>
             </div>
             <button onClick={() => setShowAdd(true)} className="btn-primary" style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -91,20 +109,19 @@ export default function AdminContent() {
             </button>
           </div>
 
-          {/* Page filter */}
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
             {pages.map(p => (
               <button key={p} onClick={() => setFilterPage(p)} style={{
                 padding: '5px 12px', borderRadius: '6px', border: '1px solid',
-                borderColor: filterPage === p ? '#0ea5e9' : '#e2e8f0',
-                background: filterPage === p ? '#e0f2fe' : '#ffffff',
-                color: filterPage === p ? '#0284c7' : '#64748b',
+                borderColor: filterPage === p ? '#2563eb' : 'rgba(59,130,246,0.15)',
+                background: filterPage === p ? 'linear-gradient(135deg, #2563eb, #0ea5e9)' : 'rgba(255,255,255,0.7)',
+                color: filterPage === p ? '#ffffff' : '#64748b',
                 fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                backdropFilter: 'blur(6px)',
               }}>{p}</button>
             ))}
           </div>
 
-          {/* Content blocks */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {filtered.map((block) => {
               const pc = PAGE_COLORS[block.page] || { bg: '#f1f5f9', color: '#64748b' }
@@ -115,15 +132,15 @@ export default function AdminContent() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px', flexWrap: 'wrap' }}>
-                        <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#0f172a' }}>{block.title}</h3>
+                        <h3 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e3a8a' }}>{block.title}</h3>
                         <span style={{ background: pc.bg, color: pc.color, fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: '20px' }}>{block.page}</span>
                         {isSaved && <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#059669', fontSize: '0.72rem', fontWeight: 600 }}><Check size={12} /> Saved!</span>}
                       </div>
-                      <p style={{ fontSize: '0.68rem', color: '#94a3b8', fontFamily: 'monospace' }}>key: {block.key}</p>
+                      <p style={{ fontSize: '0.68rem', color: '#93c5fd', fontFamily: 'monospace' }}>key: {block.key}</p>
                     </div>
                     {!isEditing && (
                       <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
-                        <button onClick={() => openEdit(block)} style={{ background: '#e0f2fe', border: '1px solid #bae6fd', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', color: '#0284c7', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                        <button onClick={() => openEdit(block)} style={{ background: 'rgba(219,234,254,0.8)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
                           <Edit2 size={12} /> Edit
                         </button>
                         <button onClick={() => handleDelete(block.id)} style={{ background: '#fee2e2', border: '1px solid #fecaca', borderRadius: '6px', padding: '5px 7px', cursor: 'pointer', color: '#dc2626', display: 'flex', alignItems: 'center' }}>
@@ -150,8 +167,8 @@ export default function AdminContent() {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ background: '#f8fafc', borderRadius: '6px', padding: '10px 12px', border: '1px solid #e2e8f0' }}>
-                      <p style={{ fontSize: '0.875rem', color: block.value ? '#0f172a' : '#94a3b8', fontStyle: block.value ? 'normal' : 'italic', lineHeight: 1.6 }}>
+                    <div style={{ background: 'rgba(219,234,254,0.2)', borderRadius: '6px', padding: '10px 12px', border: '1px solid rgba(59,130,246,0.1)' }}>
+                      <p style={{ fontSize: '0.875rem', color: block.value ? '#1e3a8a' : '#93c5fd', fontStyle: block.value ? 'normal' : 'italic', lineHeight: 1.6 }}>
                         {block.value || '(empty — click Edit to add content)'}
                       </p>
                     </div>
@@ -162,48 +179,47 @@ export default function AdminContent() {
 
             {filtered.length === 0 && (
               <div className="cr-card" style={{ padding: '50px', textAlign: 'center' }}>
-                <FileText size={36} color="#cbd5e1" style={{ margin: '0 auto 10px' }} />
-                <p style={{ color: '#94a3b8' }}>No content blocks for this page</p>
+                <FileText size={36} color="#93c5fd" style={{ margin: '0 auto 10px' }} />
+                <p style={{ color: '#64748b' }}>No content blocks for this page</p>
               </div>
             )}
           </div>
         </main>
       </div>
 
-      {/* Add Block Modal */}
       {showAdd && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', width: '100%', maxWidth: '440px', padding: '24px' }}>
+        <div style={modalStyle}>
+          <div style={{ ...cardStyle, width: '100%', maxWidth: '440px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>Add Content Block</h3>
-              <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e3a8a' }}>Add Content Block</h3>
+              <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd' }}><X size={20} /></button>
             </div>
             <form onSubmit={handleAddBlock} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Title *</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Title *</label>
                 <input type="text" required value={newBlock.title} onChange={e => setNewBlock({ ...newBlock, title: e.target.value })} placeholder="e.g. Hero Heading" className="cr-input" />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Key *</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Key *</label>
                 <input type="text" required value={newBlock.key} onChange={e => setNewBlock({ ...newBlock, key: e.target.value.toLowerCase().replace(/\s/g, '_') })} placeholder="hero_heading" className="cr-input" />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Type</label>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Type</label>
                   <select value={newBlock.type} onChange={e => setNewBlock({ ...newBlock, type: e.target.value })} className="cr-input">
                     <option value="text">Text</option>
                     <option value="textarea">Textarea</option>
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Page</label>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Page</label>
                   <select value={newBlock.page} onChange={e => setNewBlock({ ...newBlock, page: e.target.value })} className="cr-input">
                     {Object.keys(PAGE_COLORS).map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>Initial Value</label>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Initial Value</label>
                 <textarea value={newBlock.value} onChange={e => setNewBlock({ ...newBlock, value: e.target.value })} placeholder="Content..." className="cr-input" rows={3} style={{ resize: 'vertical' }} />
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>

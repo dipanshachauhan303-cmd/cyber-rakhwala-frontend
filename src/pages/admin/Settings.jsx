@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
+import AnimatedBg from '../../components/shared/AnimatedBg.jsx'
 import { Settings, Save, RefreshCw, Shield, Bell, Key, ToggleLeft, ToggleRight } from 'lucide-react'
 
 const SECTIONS = [
@@ -78,16 +79,17 @@ export default function AdminSettings() {
   const currentSection = SECTIONS.find(s => s.id === activeSection)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f1f5f9', overflowX: 'hidden' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', position: 'relative' }}>
+      <AnimatedBg pattern="circuit" />
       <Sidebar role="admin" mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingTop: isMobile ? '56px' : '0', minWidth: 0, position: 'relative', zIndex: 1 }}>
         <Topbar user={user} onMenuClick={() => setMobileMenuOpen(true)} />
 
-        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '16px' : '24px' }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '24px' }}>
 
           <div style={{ marginBottom: '20px' }}>
-            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>Settings</h1>
+            <h1 style={{ fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 800, color: '#1e3a8a', marginBottom: '4px' }}>Settings</h1>
             <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Runtime configuration and feature toggles</p>
           </div>
 
@@ -95,22 +97,20 @@ export default function AdminSettings() {
 
             {/* Section tabs */}
             <div className="cr-card" style={{ padding: '8px' }}>
-              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+              <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
                 {SECTIONS.map((s) => {
                   const Icon = s.icon
                   return (
-                    <button
-                      key={s.id}
-                      onClick={() => setActiveSection(s.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '6px',
-                        padding: '8px 12px', borderRadius: '6px', border: 'none',
-                        cursor: 'pointer', whiteSpace: 'nowrap',
-                        background: activeSection === s.id ? '#e0f2fe' : 'transparent',
-                        color: activeSection === s.id ? '#0284c7' : '#64748b',
-                        fontSize: '0.82rem', fontWeight: activeSection === s.id ? 600 : 400,
-                      }}
-                    >
+                    <button key={s.id} onClick={() => setActiveSection(s.id)} style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      padding: '8px 14px', borderRadius: '8px', border: 'none',
+                      cursor: 'pointer', whiteSpace: 'nowrap',
+                      background: activeSection === s.id ? 'linear-gradient(135deg, #2563eb, #0ea5e9)' : 'transparent',
+                      color: activeSection === s.id ? '#ffffff' : '#64748b',
+                      fontSize: '0.82rem', fontWeight: activeSection === s.id ? 600 : 400,
+                      boxShadow: activeSection === s.id ? '0 2px 8px rgba(37,99,235,0.3)' : 'none',
+                      transition: 'all 0.2s ease',
+                    }}>
                       <Icon size={14} /> {s.label}
                     </button>
                   )
@@ -120,27 +120,28 @@ export default function AdminSettings() {
 
             {/* Fields */}
             <div className="cr-card" style={{ padding: isMobile ? '16px' : '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-                {currentSection && <currentSection.icon size={20} color="#0ea5e9" />}
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>{currentSection?.label}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                {currentSection && (
+                  <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #2563eb, #0ea5e9)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' }}>
+                    <currentSection.icon size={18} color="#ffffff" />
+                  </div>
+                )}
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#1e3a8a' }}>{currentSection?.label}</h3>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                 {currentSection?.fields.map((field) => (
                   <div key={field.key}>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#0f172a', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       {field.label}
                     </label>
                     {field.type === 'toggle' ? (
-                      <button
-                        onClick={() => setSettings({ ...settings, [field.key]: !settings[field.key] })}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                      >
+                      <button onClick={() => setSettings({ ...settings, [field.key]: !settings[field.key] })} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                         {settings[field.key]
-                          ? <ToggleRight size={28} color="#0ea5e9" />
-                          : <ToggleLeft size={28} color="#94a3b8" />
+                          ? <ToggleRight size={32} color="#2563eb" />
+                          : <ToggleLeft size={32} color="#93c5fd" />
                         }
-                        <span style={{ fontSize: '0.875rem', color: settings[field.key] ? '#0ea5e9' : '#94a3b8', fontWeight: 500 }}>
+                        <span style={{ fontSize: '0.875rem', color: settings[field.key] ? '#2563eb' : '#93c5fd', fontWeight: 600 }}>
                           {settings[field.key] ? 'Enabled' : 'Disabled'}
                         </span>
                       </button>
@@ -150,14 +151,14 @@ export default function AdminSettings() {
                         value={settings[field.key]}
                         onChange={e => setSettings({ ...settings, [field.key]: e.target.value })}
                         className="cr-input"
-                        style={{ width: '100%', boxSizing: 'border-box' }}
+                        style={{ maxWidth: isMobile ? '100%' : '400px' }}
                       />
                     )}
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '24px', paddingTop: '18px', borderTop: '1px solid rgba(59,130,246,0.1)', flexWrap: 'wrap' }}>
                 <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: '10px 22px' }}>
                   <Save size={15} /> {saving ? 'Saving...' : saved ? '✓ Saved!' : 'Save Changes'}
                 </button>
