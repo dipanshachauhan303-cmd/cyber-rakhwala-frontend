@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 
-// Pattern types: 'network', 'hex', 'circuit', 'matrix', 'constellation', 'dna'
 export default function AnimatedBg({ pattern = 'network' }) {
   const canvasRef = useRef(null)
 
@@ -17,13 +16,10 @@ export default function AnimatedBg({ pattern = 'network' }) {
     resize()
     window.addEventListener('resize', resize)
 
-    // Common colors
     const blue = 'rgba(59,130,246,'
     const cyan = 'rgba(14,165,233,'
-    const light = 'rgba(219,234,254,'
 
     const drawGradientBg = () => {
-      // Base light blue gradient
       const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
       grad.addColorStop(0, '#eef2ff')
       grad.addColorStop(0.5, '#f0f4ff')
@@ -31,13 +27,11 @@ export default function AnimatedBg({ pattern = 'network' }) {
       ctx.fillStyle = grad
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Glowing orbs
-      const orbs = [
+      ;[
         { x: canvas.width * 0.1, y: canvas.height * 0.2, r: 200, c: 'rgba(147,197,253,0.25)' },
         { x: canvas.width * 0.85, y: canvas.height * 0.1, r: 250, c: 'rgba(96,165,250,0.18)' },
         { x: canvas.width * 0.5, y: canvas.height * 0.9, r: 180, c: 'rgba(14,165,233,0.15)' },
-      ]
-      orbs.forEach(o => {
+      ].forEach(o => {
         const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r)
         g.addColorStop(0, o.c)
         g.addColorStop(1, 'rgba(0,0,0,0)')
@@ -46,7 +40,7 @@ export default function AnimatedBg({ pattern = 'network' }) {
       })
     }
 
-    // 1. NETWORK — particle web
+    // NETWORK
     if (pattern === 'network') {
       const pts = Array.from({ length: 70 }, () => ({
         x: Math.random() * canvas.width,
@@ -59,26 +53,21 @@ export default function AnimatedBg({ pattern = 'network' }) {
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         drawGradientBg()
-
         pts.forEach(p => {
           p.x += p.vx; p.y += p.vy
           if (p.x < 0 || p.x > canvas.width) p.vx *= -1
           if (p.y < 0 || p.y > canvas.height) p.vy *= -1
         })
-
         for (let i = 0; i < pts.length; i++) {
           for (let j = i + 1; j < pts.length; j++) {
             const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y
             const dist = Math.sqrt(dx * dx + dy * dy)
             if (dist < 130) {
               const a = 0.2 * (1 - dist / 130)
-              const lg = ctx.createLinearGradient(pts[i].x, pts[i].y, pts[j].x, pts[j].y)
-              lg.addColorStop(0, `${blue}${a})`)
-              lg.addColorStop(1, `${cyan}${a})`)
               ctx.beginPath()
               ctx.moveTo(pts[i].x, pts[i].y)
               ctx.lineTo(pts[j].x, pts[j].y)
-              ctx.strokeStyle = lg
+              ctx.strokeStyle = `${blue}${a})`
               ctx.lineWidth = 0.8
               ctx.stroke()
             }
@@ -101,19 +90,16 @@ export default function AnimatedBg({ pattern = 'network' }) {
       animate()
     }
 
-    // 2. HEX — hexagon grid
+    // HEX
     if (pattern === 'hex') {
       let t = 0
-      const hexes = []
       const size = 32
       const w = size * 2
       const h = Math.sqrt(3) * size
-
+      const hexes = []
       for (let row = -1; row < canvas.height / h + 2; row++) {
         for (let col = -1; col < canvas.width / w + 2; col++) {
-          const x = col * w * 0.75
-          const y = row * h + (col % 2 === 0 ? 0 : h / 2)
-          hexes.push({ x, y, phase: Math.random() * Math.PI * 2 })
+          hexes.push({ x: col * w * 0.75, y: row * h + (col % 2 === 0 ? 0 : h / 2), phase: Math.random() * Math.PI * 2 })
         }
       }
 
@@ -121,9 +107,7 @@ export default function AnimatedBg({ pattern = 'network' }) {
         ctx.beginPath()
         for (let i = 0; i < 6; i++) {
           const a = (Math.PI / 3) * i - Math.PI / 6
-          const px = x + s * Math.cos(a)
-          const py = y + s * Math.sin(a)
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py)
+          i === 0 ? ctx.moveTo(x + s * Math.cos(a), y + s * Math.sin(a)) : ctx.lineTo(x + s * Math.cos(a), y + s * Math.sin(a))
         }
         ctx.closePath()
         ctx.strokeStyle = `${blue}${alpha})`
@@ -137,8 +121,7 @@ export default function AnimatedBg({ pattern = 'network' }) {
         t += 0.012
         hexes.forEach(h => {
           const pulse = (Math.sin(t + h.phase) + 1) / 2
-          const alpha = 0.04 + pulse * 0.14
-          drawHex(h.x, h.y, size - 2, alpha)
+          drawHex(h.x, h.y, size - 2, 0.04 + pulse * 0.14)
           if (pulse > 0.8) {
             drawHex(h.x, h.y, size - 2, pulse * 0.3)
             ctx.fillStyle = `${blue}${pulse * 0.06})`
@@ -150,7 +133,7 @@ export default function AnimatedBg({ pattern = 'network' }) {
       animate()
     }
 
-    // 3. CIRCUIT — circuit board lines
+    // CIRCUIT
     if (pattern === 'circuit') {
       const nodes = Array.from({ length: 25 }, () => ({
         x: Math.round(Math.random() * (canvas.width / 40)) * 40,
@@ -158,10 +141,8 @@ export default function AnimatedBg({ pattern = 'network' }) {
         pulse: Math.random() * Math.PI * 2,
         connections: [],
       }))
-
       nodes.forEach((n, i) => {
-        const nearby = nodes.filter((m, j) => j !== i && Math.hypot(m.x - n.x, m.y - n.y) < 200)
-        n.connections = nearby.slice(0, 3)
+        n.connections = nodes.filter((m, j) => j !== i && Math.hypot(m.x - n.x, m.y - n.y) < 200).slice(0, 3)
       })
 
       let t = 0
@@ -169,7 +150,6 @@ export default function AnimatedBg({ pattern = 'network' }) {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         drawGradientBg()
         t += 0.02
-
         nodes.forEach(n => {
           n.connections.forEach(m => {
             const progress = (Math.sin(t + n.pulse) + 1) / 2
@@ -183,15 +163,14 @@ export default function AnimatedBg({ pattern = 'network' }) {
             ctx.lineWidth = 0.8
             ctx.stroke()
 
-            // Moving dot on circuit
             const pathLen = Math.abs(m.x - n.x) + Math.abs(m.y - n.y)
             const dotPos = progress * pathLen
-            let dotX, dotY
             const seg1 = Math.abs(midX - n.x)
             const seg2 = Math.abs(m.y - n.y)
+            let dotX, dotY
             if (dotPos < seg1) { dotX = n.x + (midX - n.x) * (dotPos / seg1); dotY = n.y }
             else if (dotPos < seg1 + seg2) { dotX = midX; dotY = n.y + (m.y - n.y) * ((dotPos - seg1) / seg2) }
-            else { dotX = midX + (m.x - midX) * ((dotPos - seg1 - seg2) / Math.abs(m.x - midX)); dotY = m.y }
+            else { dotX = midX + (m.x - midX) * ((dotPos - seg1 - seg2) / (Math.abs(m.x - midX) || 1)); dotY = m.y }
 
             const dg = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 6)
             dg.addColorStop(0, `${cyan}0.9)`)
@@ -206,7 +185,6 @@ export default function AnimatedBg({ pattern = 'network' }) {
             ctx.fill()
           })
 
-          // Node dot
           const pulse = (Math.sin(t + n.pulse) + 1) / 2
           const ng = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 8)
           ng.addColorStop(0, `${blue}${0.6 + pulse * 0.4})`)
@@ -225,7 +203,7 @@ export default function AnimatedBg({ pattern = 'network' }) {
       animate()
     }
 
-    // 4. CONSTELLATION — star pattern
+    // CONSTELLATION
     if (pattern === 'constellation') {
       const stars = Array.from({ length: 80 }, () => ({
         x: Math.random() * canvas.width,
@@ -234,11 +212,9 @@ export default function AnimatedBg({ pattern = 'network' }) {
         phase: Math.random() * Math.PI * 2,
         twinkle: Math.random() * 0.5 + 0.5,
       }))
-
       const lines = []
       stars.forEach((s, i) => {
-        const near = stars.filter((t, j) => j !== i && Math.hypot(t.x - s.x, t.y - s.y) < 150)
-        near.slice(0, 2).forEach(t => lines.push([s, t]))
+        stars.filter((t, j) => j !== i && Math.hypot(t.x - s.x, t.y - s.y) < 150).slice(0, 2).forEach(t => lines.push([s, t]))
       })
 
       let t = 0
@@ -246,17 +222,14 @@ export default function AnimatedBg({ pattern = 'network' }) {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         drawGradientBg()
         t += 0.015
-
         lines.forEach(([a, b]) => {
-          const dist = Math.hypot(b.x - a.x, b.y - a.y)
           ctx.beginPath()
           ctx.moveTo(a.x, a.y)
           ctx.lineTo(b.x, b.y)
-          ctx.strokeStyle = `${blue}${0.08 + 0.06 * Math.sin(t)}})`
+          ctx.strokeStyle = `${blue}${0.08 + 0.06 * Math.sin(t)})`
           ctx.lineWidth = 0.6
           ctx.stroke()
         })
-
         stars.forEach(s => {
           const twinkle = s.twinkle * (0.7 + 0.3 * Math.sin(t + s.phase))
           const sg = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4)
@@ -276,33 +249,27 @@ export default function AnimatedBg({ pattern = 'network' }) {
       animate()
     }
 
-    // 5. DNA — double helix data stream
+    // DNA
     if (pattern === 'dna') {
       let t = 0
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         drawGradientBg()
         t += 0.02
-
         const cols = Math.ceil(canvas.width / 180)
         for (let c = 0; c < cols; c++) {
           const cx = (c + 0.5) * (canvas.width / cols)
           const amp = 40
-
           for (let y = -20; y < canvas.height + 20; y += 8) {
             const phase = t * 60 + y
             const x1 = cx + amp * Math.sin(phase * Math.PI / 180)
             const x2 = cx + amp * Math.sin((phase + 180) * Math.PI / 180)
-
             if (y % 24 === 0) {
               const a = Math.abs(Math.sin(phase * Math.PI / 180))
               ctx.beginPath()
-              ctx.moveTo(x1, y)
-              ctx.lineTo(x2, y)
+              ctx.moveTo(x1, y); ctx.lineTo(x2, y)
               ctx.strokeStyle = `${blue}${0.15 + a * 0.2})`
-              ctx.lineWidth = 0.8
-              ctx.stroke()
-
+              ctx.lineWidth = 0.8; ctx.stroke()
               ctx.beginPath()
               ctx.arc(x1, y, 2.5, 0, Math.PI * 2)
               ctx.fillStyle = `${cyan}${0.4 + a * 0.5})`
@@ -313,56 +280,44 @@ export default function AnimatedBg({ pattern = 'network' }) {
               ctx.fill()
             }
           }
-
-          // Strands
           ctx.beginPath()
           for (let y = 0; y < canvas.height; y += 4) {
-            const phase = t * 60 + y
-            const x = cx + amp * Math.sin(phase * Math.PI / 180)
+            const x = cx + amp * Math.sin((t * 60 + y) * Math.PI / 180)
             y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
           }
           ctx.strokeStyle = `${blue}0.12)`
-          ctx.lineWidth = 1
-          ctx.stroke()
+          ctx.lineWidth = 1; ctx.stroke()
 
           ctx.beginPath()
           for (let y = 0; y < canvas.height; y += 4) {
-            const phase = t * 60 + y + 180
-            const x = cx + amp * Math.sin(phase * Math.PI / 180)
+            const x = cx + amp * Math.sin((t * 60 + y + 180) * Math.PI / 180)
             y === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
           }
           ctx.strokeStyle = `${cyan}0.12)`
-          ctx.lineWidth = 1
-          ctx.stroke()
+          ctx.lineWidth = 1; ctx.stroke()
         }
         animId = requestAnimationFrame(animate)
       }
       animate()
     }
 
-    // 6. MATRIX — falling data
+    // MATRIX
     if (pattern === 'matrix') {
       const cols = Math.floor(canvas.width / 20)
       const drops = Array.from({ length: cols }, () => Math.random() * canvas.height / 16)
-      const chars = '01アイウエオカキクケコABCDEF0123456789'
+      const chars = '01アイウエオABCDEF0123456789'
       let t = 0
-
       const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         drawGradientBg()
         t++
-
         if (t % 3 === 0) {
           drops.forEach((drop, i) => {
             const char = chars[Math.floor(Math.random() * chars.length)]
-            const x = i * 20
-            const y = drop * 16
-
             ctx.font = '11px JetBrains Mono'
             ctx.fillStyle = `rgba(37,99,235,${Math.random() * 0.15 + 0.05})`
-            ctx.fillText(char, x, y)
-
-            if (y > canvas.height && Math.random() > 0.975) drops[i] = 0
+            ctx.fillText(char, i * 20, drop * 16)
+            if (drop * 16 > canvas.height && Math.random() > 0.975) drops[i] = 0
             else drops[i]++
           })
         }
@@ -381,9 +336,11 @@ export default function AnimatedBg({ pattern = 'network' }) {
     <canvas
       ref={canvasRef}
       style={{
-        position: 'fixed', top: 0, left: 0,
+        position: 'fixed',
+        top: 0, left: 0,
         width: '100%', height: '100%',
-        zIndex: 0, pointerEvents: 'none',
+        zIndex: -1,
+        pointerEvents: 'none',
       }}
     />
   )
