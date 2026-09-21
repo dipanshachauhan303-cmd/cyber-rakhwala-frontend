@@ -13,7 +13,6 @@ const NAV = {
     { icon: LayoutDashboard, label: 'Overview', path: '/law-enforcement/dashboard' },
     { icon: Wrench, label: 'Tools', path: '/law-enforcement/tools' },
     { icon: FolderOpen, label: 'Cases', path: '/law-enforcement/cases' },
-    { icon: FileText, label: 'Report', path: '/law-enforcement/report' },
   ],
   admin: [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
