@@ -4,12 +4,13 @@ import Sidebar from '../../components/shared/Sidebar.jsx'
 import Topbar from '../../components/shared/Topbar.jsx'
 import AnimatedBg from '../../components/shared/AnimatedBg.jsx'
 import { getToolReport } from '../../data/toolReports.js'
+import { initiateReportPayment } from '../../utils/razorpay.js'
 import {
   Phone, Users, Activity, Car, CreditCard, Shield,
   Search, Globe, Mail, Hash, Image, Link, MapPin,
   Database, Wifi, MessageCircle, Zap, X, ArrowUpRight,
   Radio, BarChart2, FileText, Building, Download,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, AlertCircle, CheckCircle
 } from 'lucide-react'
 import jsPDF from 'jspdf'
 
@@ -112,6 +113,7 @@ export default function LETools() {
   const [reportData, setReportData] = useState({})
   const [expandedSections, setExpandedSections] = useState({})
   const [generating, setGenerating] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -146,18 +148,14 @@ export default function LETools() {
     const template = getToolReport(tool.id)
     setReportTool({ ...tool, template })
     setReportData({})
+    setPaymentStatus(null)
     const exp = {}
     template.sections.forEach((s, i) => { exp[i] = i === 0 })
     setExpandedSections(exp)
   }
 
-  const toggleSection = (i) => {
-    setExpandedSections(prev => ({ ...prev, [i]: !prev[i] }))
-  }
-
-  const updateField = (key, value) => {
-    setReportData(prev => ({ ...prev, [key]: value }))
-  }
+  const toggleSection = (i) => setExpandedSections(prev => ({ ...prev, [i]: !prev[i] }))
+  const updateField = (key, value) => setReportData(prev => ({ ...prev, [key]: value }))
 
   const generatePDF = () => {
     setGenerating(true)
@@ -233,7 +231,25 @@ export default function LETools() {
 
       doc.save(`CR_${reportTool.id}_${Date.now()}.pdf`)
       setGenerating(false)
+      setPaymentStatus('success')
     }, 800)
+  }
+
+  const handlePayAndDownload = () => {
+    setPaymentStatus('processing')
+    initiateReportPayment({
+      toolName: reportTool.label,
+      officerName: user.name,
+      officerEmail: user.email,
+      onSuccess: (paymentInfo) => {
+        console.log('Payment successful:', paymentInfo)
+        generatePDF()
+      },
+      onFailure: (reason) => {
+        setPaymentStatus('failed')
+        console.error('Payment failed:', reason)
+      }
+    })
   }
 
   const inputStyle = {
@@ -263,7 +279,6 @@ export default function LETools() {
             <p style={{ color: '#64748b', fontSize: '0.82rem' }}>{TOOLS.length} tools available</p>
           </div>
 
-          {/* Search + Credits */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <div style={{ position: 'relative', flex: 1 }}>
               <Search size={13} color="#93c5fd" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
@@ -275,7 +290,6 @@ export default function LETools() {
             </div>
           </div>
 
-          {/* Category filters - horizontal scroll on mobile */}
           <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', overflowX: 'auto', paddingBottom: '4px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
             {CATEGORIES.map((cat) => (
               <button key={cat} onClick={() => setCategory(cat)} style={{
@@ -295,14 +309,11 @@ export default function LETools() {
             {filtered.length} of {TOOLS.length} tools
           </p>
 
-          {/* Tools Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: '10px' }}>
             {filtered.map((tool) => {
               const Icon = tool.icon
               return (
                 <div key={tool.id} className="cr-card" style={{ padding: isMobile ? '10px' : '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-
-                  {/* Icon + Credits */}
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div style={{ width: isMobile ? '30px' : '36px', height: isMobile ? '30px' : '36px', background: `linear-gradient(135deg, ${tool.color}20, ${tool.color}35)`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${tool.color}25`, flexShrink: 0 }}>
                       <Icon size={isMobile ? 14 : 18} color={tool.color} />
@@ -311,39 +322,20 @@ export default function LETools() {
                       <Zap size={8} />{tool.credits}
                     </span>
                   </div>
-
-                  {/* Name + Desc */}
                   <div>
                     <p style={{ fontSize: isMobile ? '0.75rem' : '0.82rem', fontWeight: 700, color: '#1e3a8a', marginBottom: '1px', lineHeight: 1.3 }}>{tool.label}</p>
                     {!isMobile && <p style={{ fontSize: '0.7rem', color: '#64748b', lineHeight: 1.4 }}>{tool.desc}</p>}
                   </div>
-
-                  {/* Category + Buttons */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px', marginTop: 'auto' }}>
                     <span style={{ background: 'rgba(219,234,254,0.6)', color: '#2563eb', fontSize: '0.58rem', fontWeight: 600, padding: '2px 5px', borderRadius: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: isMobile ? '50px' : '80px' }}>
                       {tool.category}
                     </span>
                     <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                      <button
-                        onClick={() => openReport(tool)}
-                        title="Report"
-                        style={{
-                          padding: isMobile ? '4px 6px' : '4px 8px',
-                          fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer',
-                          border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px',
-                          background: 'rgba(219,234,254,0.6)', color: '#1d4ed8',
-                          display: 'flex', alignItems: 'center', gap: '2px',
-                        }}
-                      >
+                      <button onClick={() => openReport(tool)} title="Report" style={{ padding: isMobile ? '4px 6px' : '4px 8px', fontSize: '0.68rem', fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', background: 'rgba(219,234,254,0.6)', color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <FileText size={10} />
                         {!isMobile && <span>Report</span>}
                       </button>
-                      <button
-                        onClick={() => { setActiveTool(tool); setToolInput(''); setResult(null) }}
-                        title="Launch"
-                        className="btn-primary"
-                        style={{ padding: isMobile ? '4px 6px' : '4px 10px', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: '2px' }}
-                      >
+                      <button onClick={() => { setActiveTool(tool); setToolInput(''); setResult(null) }} title="Launch" className="btn-primary" style={{ padding: isMobile ? '4px 6px' : '4px 10px', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: '2px' }}>
                         {isMobile ? <ArrowUpRight size={11} /> : <><span>Launch</span><ArrowUpRight size={10} /></>}
                       </button>
                     </div>
@@ -415,15 +407,30 @@ export default function LETools() {
                 </div>
                 <div>
                   <p style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e3a8a' }}>{reportTool.template.title}</p>
-                  <p style={{ fontSize: '0.72rem', color: '#64748b' }}>Fill details and download PDF</p>
+                  <p style={{ fontSize: '0.72rem', color: '#64748b' }}>Fill details • Pay ₹100 • Download PDF</p>
                 </div>
               </div>
-              <button onClick={() => setReportTool(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', padding: '4px' }}>
+              <button onClick={() => { setReportTool(null); setPaymentStatus(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#93c5fd', padding: '4px' }}>
                 <X size={20} />
               </button>
             </div>
 
-            {/* Body - scrollable */}
+            {/* Payment status banner */}
+            {paymentStatus === 'failed' && (
+              <div style={{ padding: '10px 20px', background: '#fee2e2', borderBottom: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={15} color="#dc2626" />
+                <p style={{ fontSize: '0.82rem', color: '#dc2626', fontWeight: 600 }}>Payment failed or cancelled. Please try again.</p>
+              </div>
+            )}
+
+            {paymentStatus === 'success' && (
+              <div style={{ padding: '10px 20px', background: '#d1fae5', borderBottom: '1px solid #a7f3d0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle size={15} color="#059669" />
+                <p style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 600 }}>Payment successful! Report downloaded.</p>
+              </div>
+            )}
+
+            {/* Body */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '14px 20px' }}>
               {reportTool.template.sections.map((section, si) => (
                 <div key={si} style={{ marginBottom: '10px', border: '1px solid rgba(59,130,246,0.12)', borderRadius: '10px', overflow: 'hidden' }}>
@@ -440,21 +447,9 @@ export default function LETools() {
                         <div key={field.key} style={{ gridColumn: field.multiline ? '1 / -1' : 'auto' }}>
                           <label style={labelStyle}>{field.label}</label>
                           {field.multiline ? (
-                            <textarea
-                              value={reportData[field.key] || ''}
-                              onChange={e => updateField(field.key, e.target.value)}
-                              rows={3}
-                              style={{ ...inputStyle, resize: 'vertical' }}
-                              placeholder={`Enter ${field.label.toLowerCase()}...`}
-                            />
+                            <textarea value={reportData[field.key] || ''} onChange={e => updateField(field.key, e.target.value)} rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder={`Enter ${field.label.toLowerCase()}...`} />
                           ) : (
-                            <input
-                              type="text"
-                              value={reportData[field.key] || ''}
-                              onChange={e => updateField(field.key, e.target.value)}
-                              style={inputStyle}
-                              placeholder={`Enter ${field.label.toLowerCase()}...`}
-                            />
+                            <input type="text" value={reportData[field.key] || ''} onChange={e => updateField(field.key, e.target.value)} style={inputStyle} placeholder={`Enter ${field.label.toLowerCase()}...`} />
                           )}
                         </div>
                       ))}
@@ -465,12 +460,18 @@ export default function LETools() {
             </div>
 
             {/* Footer */}
-            <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(59,130,246,0.1)', display: 'flex', gap: '10px', justifyContent: 'flex-end', flexShrink: 0, background: 'rgba(255,255,255,0.95)' }}>
-              <button onClick={() => setReportTool(null)} className="btn-secondary" style={{ padding: '10px 16px' }}>Cancel</button>
-              <button onClick={generatePDF} disabled={generating} className="btn-primary" style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-                <Download size={14} />
-                {generating ? 'Generating...' : 'Download PDF'}
-              </button>
+            <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(59,130,246,0.1)', flexShrink: 0, background: 'rgba(255,255,255,0.95)' }}>
+              <div style={{ background: 'rgba(254,243,199,0.6)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '8px', padding: '8px 12px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Zap size={13} color="#d97706" />
+                <p style={{ fontSize: '0.78rem', color: '#92400e' }}>A payment of <strong>₹100</strong> is required to download this intelligence report.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button onClick={() => { setReportTool(null); setPaymentStatus(null) }} className="btn-secondary" style={{ padding: '10px 16px' }}>Cancel</button>
+                <button onClick={handlePayAndDownload} disabled={generating || paymentStatus === 'processing'} className="btn-primary" style={{ padding: '10px 18px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <Download size={14} />
+                  {generating ? 'Generating PDF...' : paymentStatus === 'processing' ? 'Processing...' : 'Pay ₹100 & Download'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
