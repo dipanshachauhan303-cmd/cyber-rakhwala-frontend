@@ -1,9 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-*, *::before, *::after {
+*:not([class*="razorpay"]):not([id*="razorpay"]):not(iframe):not([class*="rzp"]):not([id*="rzp"]) {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 :root {
@@ -26,21 +24,34 @@ html {
 
 body {
   height: 100%;
-  min-height: 100vh;
   font-family: 'Inter', sans-serif;
   background: #eef2ff;
   color: #1e3a8a;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
   height: 100%;
 }
 
+/* Razorpay modal — do NOT touch */
+iframe#razorpay-checkout-frame { all: revert; }
+.razorpay-container { all: revert; }
+.razorpay-backdrop { all: revert; }
+div[class*="razorpay"] { all: revert; }
+div[id*="razorpay"] { all: revert; }
+
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.25); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.45); }
+
+/* Hide category scrollbar on mobile */
+.cat-scroll::-webkit-scrollbar { display: none; }
+.cat-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
 .cr-card {
   background: rgba(255,255,255,0.82);
@@ -93,6 +104,7 @@ textarea.cr-input { resize: vertical; min-height: 80px; }
   transition: all 0.2s ease;
   box-shadow: 0 2px 12px rgba(37,99,235,0.3);
   font-family: 'Inter', sans-serif;
+  white-space: nowrap;
 }
 .btn-primary:hover {
   background: linear-gradient(135deg, #1d4ed8, #0284c7);
@@ -117,6 +129,7 @@ textarea.cr-input { resize: vertical; min-height: 80px; }
   transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
   backdrop-filter: blur(6px);
+  white-space: nowrap;
 }
 .btn-secondary:hover {
   background: rgba(255,255,255,0.95);
@@ -139,6 +152,7 @@ textarea.cr-input { resize: vertical; min-height: 80px; }
   transition: all 0.2s ease;
   box-shadow: 0 2px 12px rgba(239,68,68,0.3);
   font-family: 'Inter', sans-serif;
+  white-space: nowrap;
 }
 .btn-danger:hover {
   transform: translateY(-1px);
@@ -176,4 +190,17 @@ textarea.cr-input { resize: vertical; min-height: 80px; }
   color: #1e3a8a;
   font-family: 'JetBrains Mono', monospace;
   line-height: 1;
+}
+
+/* Mobile responsive helpers */
+@media (max-width: 768px) {
+  .cr-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .btn-primary, .btn-secondary, .btn-danger {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
 }
