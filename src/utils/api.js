@@ -2,7 +2,10 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const request = async (method, path, body = null, token = null) => {
   const headers = { 'Content-Type': 'application/json' }
-  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  // Auto attach token from localStorage if not provided
+  const t = token || localStorage.getItem('cr_token')
+  if (t) headers['Authorization'] = `Bearer ${t}`
 
   const options = { method, headers }
   if (body) options.body = JSON.stringify(body)
