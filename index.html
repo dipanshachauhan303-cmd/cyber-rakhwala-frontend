@@ -7,19 +7,35 @@
     <title>Cyber Rakhwala</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
-      /* Razorpay modal fix - prevent our CSS from affecting it */
-      body > div:not(#root) {
-        all: initial !important;
+      .razorpay-container {
         position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 99999 !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
-      .razorpay-container,
-      .razorpay-container *,
-      .razorpay-backdrop,
-      .razorpay-backdrop * {
-        all: revert !important;
+      .razorpay-backdrop {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: rgba(0,0,0,0.6) !important;
+        z-index: 99998 !important;
+        margin: 0 !important;
+        padding: 0 !important;
       }
       #razorpay-checkout-frame {
-        all: revert !important;
+        position: relative !important;
+        margin: auto !important;
+        border: none !important;
+        z-index: 99999 !important;
       }
     </style>
   </head>
