@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-*:not([class*="razorpay"]):not([id*="razorpay"]):not(iframe):not([class*="rzp"]):not([id*="rzp"]) {
-  box-sizing: border-box;
-}
-
 :root {
   --primary: #2563eb;
   --primary-light: #3b82f6;
@@ -18,40 +14,33 @@
   --shadow-md: 0 4px 20px rgba(37,99,235,0.12);
 }
 
-html {
-  height: 100%;
-}
-
-body {
+html, body {
+  margin: 0;
+  padding: 0;
   height: 100%;
   font-family: 'Inter', sans-serif;
   background: #eef2ff;
   color: #1e3a8a;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  margin: 0;
-  padding: 0;
 }
 
 #root {
   height: 100%;
+  box-sizing: border-box;
 }
 
-/* Razorpay modal — do NOT touch */
-iframe#razorpay-checkout-frame { all: revert; }
-.razorpay-container { all: revert; }
-.razorpay-backdrop { all: revert; }
-div[class*="razorpay"] { all: revert; }
-div[id*="razorpay"] { all: revert; }
+/* Only reset OUR elements, not Razorpay */
+#root *, #root *::before, #root *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.25); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.45); }
-
-/* Hide category scrollbar on mobile */
-.cat-scroll::-webkit-scrollbar { display: none; }
-.cat-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
 .cr-card {
   background: rgba(255,255,255,0.82);
@@ -192,7 +181,6 @@ textarea.cr-input { resize: vertical; min-height: 80px; }
   line-height: 1;
 }
 
-/* Mobile responsive helpers */
 @media (max-width: 768px) {
   .cr-table {
     display: block;
